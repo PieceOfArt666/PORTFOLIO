@@ -21,7 +21,7 @@ export function App() {
         return saved;
       }
     }
-    return 'zelda'; // Default to the brand-new Hyrule / Zelda Adventure Theme!
+    return 'mario'; // Default to Mario theme matching reference header!
   });
 
   // Background style state: Default is now Game Console Parallax!

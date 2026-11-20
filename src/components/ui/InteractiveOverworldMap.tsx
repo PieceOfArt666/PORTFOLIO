@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { PROJECTS } from '../../data/portfolioData';
@@ -61,15 +61,20 @@ const STAGES = [
 ];
 
 export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: OverworldMapProps) {
-  const [selectedStage, setSelectedStage] = useState(() => {
-    return STAGES.find(s => s.id === activeProjectId) || STAGES[1];
-  });
+  const [selectedStageId, setSelectedStageId] = useState<string>(activeProjectId);
   const [chestCollected, setChestCollected] = useState(false);
   const [showCoinPop, setShowCoinPop] = useState(false);
 
+  // Synchronize when activeProjectId changes from the milestone pills or elsewhere
+  useEffect(() => {
+    setSelectedStageId(activeProjectId);
+  }, [activeProjectId]);
+
+  const selectedStage = STAGES.find(s => s.id === selectedStageId) || STAGES[1];
+
   const handleStageClick = (stage: typeof STAGES[0], shouldScroll = false) => {
     soundEffects.playJump();
-    setSelectedStage(stage);
+    setSelectedStageId(stage.id);
     if (stage.id !== 'start') {
       onSelectProject(stage.id);
     }
@@ -269,6 +274,63 @@ export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: Ov
                   <span className="font-pixel text-[9px]">PLAY ON CRAYON ↗</span>
                   <Sparkles className="w-3 h-3" />
                 </a>
+                <a
+                  href="#stage-showcase"
+                  onClick={() => soundEffects.playSelect()}
+                  className="btn-2d-white text-xs py-2 px-3.5 rounded-full flex-1 sm:flex-initial text-center"
+                >
+                  <span className="font-pixel text-[8px]">VIEW DIORAMA ↓</span>
+                </a>
+              </>
+            ) : selectedStage.id === 'summer-reverie' && activeProject ? (
+              <>
+                {activeProject.indieConnectUrl && (
+                  <a
+                    href={activeProject.indieConnectUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundEffects.playPowerup()}
+                    className="btn-2d-red text-xs py-2 px-4 rounded-full flex-1 sm:flex-initial text-center inline-flex items-center justify-center gap-1.5"
+                  >
+                    <span className="key-2d key-2d-red w-4 h-4 text-[7px]">A</span>
+                    <span className="font-pixel text-[9px]">INDIE CONNECT ↗</span>
+                    <Sparkles className="w-3 h-3" />
+                  </a>
+                )}
+                {activeProject.downloadUrl && (
+                  <a
+                    href={activeProject.downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundEffects.playSelect()}
+                    className="btn-2d-white text-xs py-2 px-3.5 rounded-full flex-1 sm:flex-initial text-center inline-flex items-center justify-center gap-1"
+                  >
+                    <span className="font-pixel text-[8px]">GET .ZIP ↓</span>
+                  </a>
+                )}
+                <a
+                  href="#stage-showcase"
+                  onClick={() => soundEffects.playSelect()}
+                  className="btn-2d-white text-xs py-2 px-3.5 rounded-full flex-1 sm:flex-initial text-center"
+                >
+                  <span className="font-pixel text-[8px]">VIEW DIORAMA ↓</span>
+                </a>
+              </>
+            ) : selectedStage.id === 'hgc' && activeProject ? (
+              <>
+                {activeProject.itchUrl && (
+                  <a
+                    href={activeProject.itchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundEffects.playPowerup()}
+                    className="btn-2d-red text-xs py-2 px-4 rounded-full flex-1 sm:flex-initial text-center inline-flex items-center justify-center gap-1.5"
+                  >
+                    <span className="key-2d key-2d-red w-4 h-4 text-[7px]">A</span>
+                    <span className="font-pixel text-[9px]">PLAY ON ITCH.IO ↗</span>
+                    <Sparkles className="w-3 h-3" />
+                  </a>
+                )}
                 <a
                   href="#stage-showcase"
                   onClick={() => soundEffects.playSelect()}

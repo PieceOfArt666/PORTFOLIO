@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { PROJECTS } from '../../data/portfolioData';
 import { soundEffects } from '../../utils/soundEffects';
+import overworldMapImg from '../../assets/overworld-4-islands-map.jpg';
 
 interface OverworldMapProps {
   activeProjectId: string;
@@ -128,7 +129,7 @@ export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: Ov
         {/* The Overworld Island Graphic Floating Seamlessly (Native 1024x1024 1:1 Aspect Ratio) */}
         <div className="relative w-full aspect-square max-h-[720px] overflow-hidden rounded-[32px] border-4 border-[#1E232B] shadow-[6px_8px_0px_#1E232B] bg-[#C6E6FD]">
           <img
-            src="/images/nintendo-world-map.jpg"
+            src={overworldMapImg}
             alt="2D Nintendo Overworld Map 4 Floating Islands"
             className="w-full h-full object-fill block select-none pointer-events-none"
             loading="eager"

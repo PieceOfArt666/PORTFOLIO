@@ -38,18 +38,18 @@ function RetroArcadeYoutubePlayer({ videoId, title }: { videoId: string; title: 
               soundEffects.playJump();
               setIsPlaying(true);
             }}
-            className="absolute inset-0 m-auto w-14 h-14 rounded-xl bg-[#E60012] hover:bg-[#CF0010] text-white flex items-center justify-center border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] hover:scale-110 active:scale-95 transition-all pointer-events-auto cursor-pointer z-10"
-            title="Play Official Gameplay Trailer"
+            className="absolute inset-0 m-auto w-16 h-12 rounded-2xl bg-[#E60012] hover:bg-[#CF0010] text-white flex items-center justify-center border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] hover:scale-110 active:scale-95 transition-all pointer-events-auto cursor-pointer z-10"
+            title="Play Official YouTube Trailer"
           >
-            <Play className="w-6 h-6 ml-1 fill-white" />
+            <Play className="w-6 h-6 ml-0.5 fill-white" />
           </button>
 
           <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded bg-[#1E232B] text-white border-2 border-white/60 font-pixel text-[8px] pointer-events-none flex items-center gap-1.5 z-10 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E60012] animate-ping" />
-            <span>OFFICIAL TRAILER</span>
+            <span>YOUTUBE TRAILER</span>
           </div>
 
-          <div className="absolute bottom-2.5 right-2.5 px-2.5 py-0.5 rounded bg-[var(--theme-primary)] text-white font-pixel text-[8px] pointer-events-none z-10 shadow-sm transition-colors">
+          <div className="absolute bottom-2.5 right-2.5 px-2.5 py-0.5 rounded bg-[#E60012] text-white font-pixel text-[8px] pointer-events-none z-10 shadow-sm">
             YOUTUBE HD
           </div>
         </div>
@@ -87,7 +87,7 @@ function RetroArcadeVideoPlayer({ src, title }: { src: string; title: string }) 
   };
 
   return (
-    <div className="game-screen-bezel aspect-video group/video relative overflow-hidden rounded-2xl shadow-[4px_5px_0px_#1E232B]">
+    <div className="game-screen-bezel aspect-video group/video relative overflow-hidden rounded-2xl shadow-[4px_5px_0px_#1E232B] bg-[#0A0E14]">
       <video
         ref={videoRef}
         src={src}
@@ -101,20 +101,31 @@ function RetroArcadeVideoPlayer({ src, title }: { src: string; title: string }) 
         onPause={() => setIsPlaying(false)}
       />
       {!isPlaying && (
-        <button
+        <div 
           onClick={togglePlay}
-          className="absolute inset-0 m-auto w-14 h-14 rounded-xl bg-[#E60012] hover:bg-[#CF0010] text-white flex items-center justify-center border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] hover:scale-110 active:scale-95 transition-all pointer-events-auto cursor-pointer z-10"
-          title="Play Gameplay Video"
+          className="absolute inset-0 bg-black/45 hover:bg-black/30 flex items-center justify-center transition-all cursor-pointer z-10"
         >
-          <Play className="w-6 h-6 ml-1 fill-white" />
-        </button>
+          {/* Retro Recorded In-Engine Play Capsule - NOT YouTube style */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlay();
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#1E232B]/95 hover:bg-[#1E232B] text-white border-2 border-white/80 shadow-[4px_4px_0px_#000] hover:scale-105 active:scale-95 transition-all cursor-pointer group/btn"
+            title="Play Recorded Gameplay Clip"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-[#E60012] animate-pulse" />
+            <Play className="w-4 h-4 fill-white ml-0.5" />
+            <span className="font-pixel text-[8px] tracking-wider font-bold">PLAY RECORDING</span>
+          </button>
+        </div>
       )}
-      <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded bg-[#1E232B] text-white border-2 border-white/60 font-pixel text-[8px] pointer-events-none flex items-center gap-1.5 z-10 shadow-sm">
+      <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded bg-[#1E232B]/90 backdrop-blur-xs text-white border-2 border-white/60 font-pixel text-[8px] pointer-events-none flex items-center gap-1.5 z-10 shadow-sm">
         <span className="w-1.5 h-1.5 rounded-full bg-[#E60012] animate-ping" />
-        <span>PLAYABLE RECORDING</span>
+        <span>● RECORDED FOOTAGE</span>
       </div>
-      <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-[var(--theme-primary)] text-white font-pixel text-[8px] pointer-events-none z-10 shadow-sm transition-colors">
-        1080P • 60 FPS
+      <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-[#1E232B]/85 text-white border border-white/40 font-pixel text-[8px] pointer-events-none z-10 shadow-sm">
+        REC • 1080P 60FPS
       </div>
     </div>
   );
@@ -239,15 +250,15 @@ export function Projects() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-20 pt-2">
               {/* Left Column: Arcade TV Screen Bezel */}
               <div className="lg:col-span-6 flex flex-col gap-3">
-                {activeMediaTab === 'trailer' && activeProject.videoUrl ? (
+                {activeMediaTab === 'trailer' && activeProject.youtubeId ? (
+                  <RetroArcadeYoutubePlayer
+                    videoId={activeProject.youtubeId}
+                    title={activeProject.title}
+                  />
+                ) : activeMediaTab === 'trailer' && activeProject.videoUrl ? (
                   <RetroArcadeVideoPlayer
                     key={activeProject.videoUrl}
                     src={activeProject.videoUrl}
-                    title={activeProject.title}
-                  />
-                ) : activeMediaTab === 'trailer' && activeProject.youtubeId ? (
-                  <RetroArcadeYoutubePlayer
-                    videoId={activeProject.youtubeId}
                     title={activeProject.title}
                   />
                 ) : (
@@ -295,14 +306,25 @@ export function Projects() {
                             soundEffects.playSelect();
                             setActiveMediaTab('trailer');
                           }}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-pixel text-[8px] border-2 border-[#1E232B] transition-all cursor-pointer ${
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-pixel text-[8px] border-2 border-[#1E232B] transition-all cursor-pointer ${
                             activeMediaTab === 'trailer'
-                              ? 'bg-[#E60012] text-white shadow-xs font-bold'
+                              ? activeProject.youtubeId
+                                ? 'bg-[#E60012] text-white shadow-xs font-bold'
+                                : 'bg-[#1E232B] text-white shadow-xs font-bold'
                               : 'bg-slate-100 text-[#1E232B] hover:bg-slate-200'
                           }`}
                         >
-                          <Film className="w-3 h-3" />
-                          <span>{activeProject.videoUrl ? 'TEASER' : 'TRAILER'}</span>
+                          {activeProject.youtubeId ? (
+                            <>
+                              <Film className="w-3 h-3 text-white" />
+                              <span>YT TRAILER</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#E60012] animate-pulse inline-block" />
+                              <span>RECORDED</span>
+                            </>
+                          )}
                         </button>
                       )}
 
@@ -349,7 +371,11 @@ export function Projects() {
                     </div>
 
                     <span className="font-pixel text-[7px] text-slate-500 hidden sm:inline">
-                      {activeMediaTab === 'trailer' ? 'YOUTUBE 1080P' : `PHOTO ${activeScreenshotIdx + 1}/${activeProject.screenshots?.length || 1}`}
+                      {activeMediaTab === 'trailer'
+                        ? activeProject.youtubeId
+                          ? 'YOUTUBE 1080P'
+                          : 'RECORDED 1080P • 60 FPS'
+                        : `PHOTO ${activeScreenshotIdx + 1}/${activeProject.screenshots?.length || 1}`}
                     </span>
                   </div>
                 )}
@@ -561,7 +587,9 @@ export function Projects() {
                             title="Watch In-Engine Teaser Clip"
                           >
                             <Film className="w-3.5 h-3.5 text-white group-hover/teaser:scale-125 transition-transform" />
-                            <span className="font-pixel text-[8px]">WATCH TEASER</span>
+                            <span className="font-pixel text-[8px]">
+                              {activeProject.youtubeId ? 'WATCH TRAILER' : 'WATCH RECORDING'}
+                            </span>
                           </button>
                         )}
                       </div>

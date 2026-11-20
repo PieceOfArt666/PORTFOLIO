@@ -4,6 +4,7 @@ import { ChevronRight, Sparkles } from 'lucide-react';
 import { PROJECTS } from '../../data/portfolioData';
 import { soundEffects } from '../../utils/soundEffects';
 import overworldMapImg from '../../assets/overworld-4-islands-map.jpg';
+import charAdventurerImg from '../../assets/char-adventurer.png';
 
 interface OverworldMapProps {
   activeProjectId: string;
@@ -162,15 +163,22 @@ export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: Ov
                   )}
                 </div>
 
-                {/* Animated 2D Player 1 Pointer Pin Bouncing Standing on Platform */}
+                {/* Animated 2D Adventurer Character Hopping & Standing on Platform */}
                 {isSelected ? (
                   <motion.div
-                    layoutId="playerPin"
-                    className="absolute -top-10 sm:-top-11 left-1/2 -translate-x-1/2 bg-[var(--theme-primary)] text-white font-pixel text-[8px] sm:text-[9px] px-2.5 py-1 rounded-full border-2 border-[#1E232B] shadow-[2px_3px_0px_#1E232B] flex items-center gap-1.5 whitespace-nowrap pointer-events-none animate-bounce z-40"
+                    layoutId="playerAdventurer"
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="absolute -top-14 sm:-top-16 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-40"
                   >
-                    <span className="text-[#FCD34D]">★</span>
-                    <span>P1</span>
-                    <span className="text-[10px]">▼</span>
+                    <img 
+                      src={charAdventurerImg} 
+                      alt="Player Adventurer" 
+                      className="w-10 h-14 sm:w-12 sm:h-16 object-contain animate-bounce drop-shadow-[0_4px_6px_rgba(0,0,0,0.35)]" 
+                    />
+                    <div className="bg-[var(--theme-primary)] text-white font-pixel text-[7px] sm:text-[8px] px-2 py-0.5 rounded-full border border-[#1E232B] shadow-[1px_2px_0px_#1E232B] -mt-1.5 flex items-center gap-1 whitespace-nowrap">
+                      <span className="text-[#FCD34D]">★</span>
+                      <span>P1</span>
+                    </div>
                   </motion.div>
                 ) : (
                   /* Peek Flag Indicator on Hover */

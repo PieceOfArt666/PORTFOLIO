@@ -6,7 +6,7 @@ interface StudioAtmosphereProps {
   bgStyle?: 'white' | 'parallax';
 }
 
-export function StudioAtmosphere({ currentTheme = 'zelda', bgStyle = 'white' }: StudioAtmosphereProps) {
+export function StudioAtmosphere({ currentTheme = 'zelda', bgStyle = 'parallax' }: StudioAtmosphereProps) {
   const { scrollY, scrollYProgress } = useScroll();
 
   // 1. Mouse Position Tracker Normalized [-1, 1] (Unconditional Hook Execution)

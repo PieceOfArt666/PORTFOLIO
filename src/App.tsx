@@ -24,15 +24,15 @@ export function App() {
     return 'zelda'; // Default to the brand-new Hyrule / Zelda Adventure Theme!
   });
 
-  // Background style state: Default is pure white
+  // Background style state: Default is now Game Console Parallax!
   const [bgStyle, setBgStyle] = useState<BgStyle>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('abhijith-bg-style') as BgStyle;
+      const saved = localStorage.getItem('abhijith-bg-style-v2') as BgStyle;
       if (saved && ['white', 'parallax'].includes(saved)) {
         return saved;
       }
     }
-    return 'white'; // Default is pure white as requested!
+    return 'parallax'; // Default is Game Console Parallax as requested!
   });
 
   const [coins, setCoins] = useState(42);
@@ -48,7 +48,7 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-bg-style', bgStyle);
-    localStorage.setItem('abhijith-bg-style', bgStyle);
+    localStorage.setItem('abhijith-bg-style-v2', bgStyle);
   }, [bgStyle]);
 
   const handleCycleTheme = () => {

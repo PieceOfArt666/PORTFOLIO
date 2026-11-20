@@ -17,7 +17,7 @@ export function Navbar({
   onCycleTheme, 
   coins: propCoins, 
   onAddCoin,
-  bgStyle = 'white',
+  bgStyle = 'parallax',
   onToggleBgStyle,
 }: NavbarProps) {
   const [activeSection, setActiveSection] = useState('hero');

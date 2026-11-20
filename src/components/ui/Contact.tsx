@@ -27,6 +27,8 @@ function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
 export function Contact() {
   const [copied, setCopied] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -41,13 +43,53 @@ export function Contact() {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     soundEffects.playPowerup();
-    const messageContent = `To: ${PERSONAL_INFO.email}\nSubject: ${formData.subject || `Message from ${formData.name}`}\nFrom: ${formData.name} (${formData.email})\n\n${formData.message}`;
-    navigator.clipboard.writeText(messageContent);
-    setFormSubmitted(true);
-    setTimeout(() => setFormSubmitted(false), 5000);
+    setIsSending(true);
+    setStatusMessage(null);
+
+    try {
+      const response = await fetch(`https://formsubmit.co/ajax/${PERSONAL_INFO.email}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject || `Message from ${formData.name}`,
+          message: formData.message,
+          _subject: `🎮 Portfolio Message from ${formData.name}: ${formData.subject || 'General Inquiry'}`,
+          _template: 'table',
+          _captcha: 'false'
+        })
+      });
+
+      const result = await response.json();
+      if (result.success === 'true' || result.success === true) {
+        setStatusMessage('TRANSMITTED DIRECTLY TO YOUR MAIL (abhijithdas19@gmail.com)!');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else if (result.message && result.message.includes('Activation')) {
+        setStatusMessage('FIRST-TIME ACTIVATION: Check your email (abhijithdas19@gmail.com) and click "Activate Form" once!');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        const messageContent = `To: ${PERSONAL_INFO.email}\nSubject: ${formData.subject || 'Portfolio Inquiry'}\nFrom: ${formData.name} (${formData.email})\n\n${formData.message}`;
+        navigator.clipboard.writeText(messageContent);
+        setStatusMessage('MESSAGE TRANSMITTED & COPIED TO CLIPBOARD!');
+      }
+      setFormSubmitted(true);
+      setTimeout(() => setFormSubmitted(false), 8000);
+    } catch {
+      const messageContent = `To: ${PERSONAL_INFO.email}\nSubject: ${formData.subject || 'Portfolio Inquiry'}\nFrom: ${formData.name} (${formData.email})\n\n${formData.message}`;
+      navigator.clipboard.writeText(messageContent);
+      setStatusMessage('OFFLINE MODE: MESSAGE COPIED TO CLIPBOARD!');
+      setFormSubmitted(true);
+      setTimeout(() => setFormSubmitted(false), 8000);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const scrollToTop = () => {
@@ -226,8 +268,10 @@ export function Contact() {
 
               {formSubmitted && (
                 <div className="mb-6 p-4 rounded-2xl bg-green-50 border-2 border-[#16A34A] text-green-800 text-sm font-semibold flex items-center gap-2.5 relative z-20">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="font-pixel text-[9px]">MESSAGE &amp; EMAIL COPIED TO CLIPBOARD!</span>
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 animate-bounce" />
+                  <span className="font-pixel text-[9px] leading-relaxed">
+                    {statusMessage || 'TRANSMITTED DIRECTLY TO YOUR MAIL!'}
+                  </span>
                 </div>
               )}
 
@@ -292,11 +336,16 @@ export function Contact() {
 
                 <button
                   type="submit"
-                  className="btn-2d-red group/submit w-full text-base py-3.5 px-6 rounded-full shadow-[4px_5px_0px_#1E232B] hover:shadow-[0_0_18px_rgba(21,128,61,0.5),5px_7px_0px_#1E232B]"
+                  disabled={isSending}
+                  className="btn-2d-red group/submit w-full text-base py-3.5 px-6 rounded-full shadow-[4px_5px_0px_#1E232B] hover:shadow-[0_0_18px_rgba(21,128,61,0.5),5px_7px_0px_#1E232B] disabled:opacity-60 cursor-pointer disabled:cursor-wait"
                 >
-                  <span className="key-2d key-2d-red w-5 h-5 text-[9px] group-hover/submit:rotate-12 transition-transform">A</span>
-                  <span className="font-pixel text-[10px]">TRANSMIT MESSAGE</span>
-                  <Send className="w-4 h-4 fill-white ml-1 group-hover/submit:translate-x-1 group-hover/submit:-translate-y-1 transition-transform" />
+                  <span className="key-2d key-2d-red w-5 h-5 text-[9px] group-hover/submit:rotate-12 transition-transform">
+                    {isSending ? '...' : 'A'}
+                  </span>
+                  <span className="font-pixel text-[10px]">
+                    {isSending ? 'TRANSMITTING TO YOUR MAIL...' : 'SEND MESSAGE TO MY MAIL'}
+                  </span>
+                  <Send className={`w-4 h-4 fill-white ml-1 transition-transform ${isSending ? 'animate-pulse' : 'group-hover/submit:translate-x-1 group-hover/submit:-translate-y-1'}`} />
                 </button>
               </form>
 

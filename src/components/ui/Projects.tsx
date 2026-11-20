@@ -372,6 +372,12 @@ export function Projects() {
                           BYOG 2026
                         </span>
                       )}
+                      {activeProject.id === 'hgc' && (
+                        <span className="font-pixel text-[8px] text-amber-900 bg-amber-100 border-2 border-[#1E232B] px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                          <span>🥈</span>
+                          <span>EXR GAME JAM 2ND PLACE</span>
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1 font-pixel text-[9px] text-[#F59E0B]">
@@ -489,7 +495,22 @@ export function Projects() {
                         )}
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {activeProject.awardUrl && (
+                          <a
+                            href={activeProject.awardUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => soundEffects.playSelect()}
+                            className="btn-2d-white text-xs py-1.5 px-3 rounded-full group/award inline-flex items-center gap-1.5"
+                            title="View EXR Games Game Jam 2nd Prize Announcement on Instagram"
+                          >
+                            <span className="text-xs group-hover/award:scale-125 transition-transform">🥈</span>
+                            <span className="font-pixel text-[8px]">EXR JAM WINNER</span>
+                            <ExternalLink className="w-3 h-3 text-amber-600 group-hover/award:translate-x-0.5 transition-transform" />
+                          </a>
+                        )}
+
                         {activeProject.githubUrl && (
                           <a
                             href={activeProject.githubUrl}

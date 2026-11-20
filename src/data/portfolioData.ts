@@ -97,8 +97,8 @@ export const PROJECTS: Project[] = [
     id: "hgc",
     title: "Halloween Graveyard Challenge",
     genre: "3D Survival Stealth Adventure",
-    tagline: "You asked for a treat... the witch chose TRICK! Survive a cursed cemetery before midnight.",
-    description: "Separated from friends while trick-or-treating on Halloween night, young Timmy is banished by a wicked witch into a fog-shrouded cemetery. To break the curse, players must stealthily navigate five perilous graveyard sectors, recover the 5 Elemental Relic Gravestones, evade patrolling undead ghouls, and ignite Ancient Portal Ten to escape.",
+    tagline: "🥈 2nd Prize Winner (EXR Game Jam) • You asked for a treat... the witch chose TRICK!",
+    description: "Awarded 2nd Prize in the Game Jam conducted by EXR Games! Separated from friends while trick-or-treating on Halloween night, young Timmy is banished by a wicked witch into a fog-shrouded cemetery. To break the curse, players must stealthily navigate five perilous graveyard sectors, recover the 5 Elemental Relic Gravestones, evade patrolling undead ghouls, and ignite Ancient Portal Ten to escape.",
     designRole: "Lead Game Designer & Systems Programmer",
     engine: "Unity 6 URP",
     languages: ["C#", "Unity 6 URP", "Bloodlines UI"],
@@ -116,13 +116,15 @@ export const PROJECTS: Project[] = [
       "/images/hgc/screenshot-8.png"
     ],
     features: [
+      "🥈 2nd Prize Winner: Awarded 2nd Place in the EXR Games Game Jam",
       "Tense Line-of-Sight Stealth: Evade wandering undead ghouls and patrolling cemetery horrors",
       "5 Elemental Gravestones: Search Gallows Yard, Crypt Maze, Iron Mausoleum & Pumpkin Patch",
       "Ancient Portal Ten: Return collected relics to the mystical northern portal ring to escape",
       "Stylized Gothic Atmosphere: Volumetric fog, jack-o'-lanterns, and ornate Bloodlines UI"
     ],
     itchUrl: "https://maajingod.itch.io/hgc",
-    badge: "Halloween 3D Release",
+    awardUrl: "https://www.instagram.com/p/DfZAHu5TpV-/",
+    badge: "🥈 2ND PRIZE • EXR GAME JAM",
     color: "#EA580C",
   },
 ];

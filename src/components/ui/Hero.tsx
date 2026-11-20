@@ -54,7 +54,7 @@ export function Hero() {
           {/* Name in Bold 2D Nintendo Logo Typography with Proximity & Bouncy Movement */}
           <div className="relative mb-3 w-full max-w-full overflow-hidden">
             <MagneticText strength={16} rotationStrength={2} className="w-full max-w-full">
-              <h1 className="font-display font-black text-[clamp(1.75rem,5.2vw,4.5rem)] text-[#1E232B] tracking-tight leading-none cursor-pointer whitespace-nowrap w-full">
+              <h1 className="font-display font-black text-[clamp(1.35rem,4.7vw,4.5rem)] text-[#1E232B] tracking-tight leading-none cursor-pointer whitespace-nowrap w-full">
                 <BouncyInteractiveHeading text={PERSONAL_INFO.name.toUpperCase()} />
               </h1>
             </MagneticText>

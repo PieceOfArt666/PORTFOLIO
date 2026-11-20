@@ -50,12 +50,12 @@ const STAGES = [
     id: 'hgc',
     name: 'STAGE 3: HALLOWEEN GRAVEYARD CHALLENGE',
     type: '3D SURVIVAL STEALTH',
-    desc: 'Survive a cursed cemetery, recover 5 elemental relics, and ignite Ancient Portal Ten',
+    desc: '🥈 2nd Prize Winner (EXR Game Jam) - Evade undead ghouls, recover 5 relics, and escape',
     x: 63.38,
     y: 48.70,
     color: '#EA580C',
     icon: '3',
-    badge: 'HALLOWEEN 3D RELEASE',
+    badge: '🥈 2ND PRIZE • EXR JAM',
     label: 'STAGE 3',
   },
 ];
@@ -318,6 +318,19 @@ export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: Ov
               </>
             ) : selectedStage.id === 'hgc' && activeProject ? (
               <>
+                {activeProject.awardUrl && (
+                  <a
+                    href={activeProject.awardUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundEffects.playSelect()}
+                    className="btn-2d-white text-xs py-2 px-3 rounded-full flex-1 sm:flex-initial text-center inline-flex items-center justify-center gap-1.5"
+                    title="View EXR Games Jam 2nd Prize on Instagram"
+                  >
+                    <span>🥈</span>
+                    <span className="font-pixel text-[8px]">EXR JAM WINNER ↗</span>
+                  </a>
+                )}
                 {activeProject.itchUrl && (
                   <a
                     href={activeProject.itchUrl}

@@ -13,6 +13,7 @@ export interface Project {
   crayonUrl?: string;
   indieConnectUrl?: string;
   downloadUrl?: string;
+  awardUrl?: string;
   trailerUrl?: string;
   youtubeId?: string;
   screenshots?: string[];

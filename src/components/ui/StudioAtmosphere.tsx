@@ -99,12 +99,11 @@ export function StudioAtmosphere({ currentTheme = 'zelda', bgStyle = 'parallax' 
         <div className="absolute top-2.5 left-4 right-4 hidden xl:flex items-center justify-between font-pixel text-[8px] text-[#1E232B] font-black pointer-events-none z-30">
           <div className="flex items-center gap-1.5 bg-white/85 px-2.5 py-1 rounded-full border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] backdrop-blur-xs">
             <span className="w-2 h-2 rounded-full bg-[var(--theme-primary)] animate-pulse shadow-sm" />
-            <span>POWER / CH 1-1</span>
+            <span>POWER</span>
           </div>
 
-          <div className="flex items-center gap-2 bg-white/85 px-2.5 py-1 rounded-full border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] backdrop-blur-xs">
-            <span className="font-mono text-[9px] font-bold text-slate-800">60 FPS</span>
-            <span className="text-[var(--theme-primary)]">■■■■</span>
+          <div className="flex items-center gap-1.5 bg-white/85 px-2.5 py-1 rounded-full border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] backdrop-blur-xs">
+            <span className="text-[var(--theme-primary)] text-[7px]">■■■</span>
             <span>BATTERY</span>
           </div>
         </div>

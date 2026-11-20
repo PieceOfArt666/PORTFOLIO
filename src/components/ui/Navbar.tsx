@@ -129,7 +129,7 @@ export function Navbar({
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-2 sm:px-4 py-1.5 sm:py-2 pointer-events-none">
       {/* Main Sleek Single Pill Bar (Matches Image 2 exactly) */}
-      <nav className="max-w-7xl w-full mx-auto bg-white border-2 border-[#1E232B] shadow-[2px_3px_0px_#1E232B] rounded-full px-2.5 sm:px-3.5 py-1 pointer-events-auto transition-all">
+      <nav className="max-w-6xl w-full mx-auto bg-white border-2 border-[#1E232B] shadow-[2px_3px_0px_#1E232B] rounded-full px-2.5 sm:px-3.5 py-1 pointer-events-auto transition-all">
         <div className="flex items-center justify-between gap-1 sm:gap-2.5 w-full">
           {/* Left: Player Avatar, Name, Coin Counter, World Badge */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">

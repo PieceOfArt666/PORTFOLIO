@@ -44,14 +44,10 @@ export function Contact() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     soundEffects.playPowerup();
-    const mailtoUrl = `mailto:${PERSONAL_INFO.email}?subject=${encodeURIComponent(
-      formData.subject || `Message from ${formData.name}`
-    )}&body=${encodeURIComponent(
-      `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
-    )}`;
-    window.location.href = mailtoUrl;
+    const messageContent = `To: ${PERSONAL_INFO.email}\nSubject: ${formData.subject || `Message from ${formData.name}`}\nFrom: ${formData.name} (${formData.email})\n\n${formData.message}`;
+    navigator.clipboard.writeText(messageContent);
     setFormSubmitted(true);
-    setTimeout(() => setFormSubmitted(false), 4000);
+    setTimeout(() => setFormSubmitted(false), 5000);
   };
 
   const scrollToTop = () => {
@@ -231,7 +227,7 @@ export function Contact() {
               {formSubmitted && (
                 <div className="mb-6 p-4 rounded-2xl bg-green-50 border-2 border-[#16A34A] text-green-800 text-sm font-semibold flex items-center gap-2.5 relative z-20">
                   <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="font-pixel text-[9px]">MESSAGE TRANSMITTING VIA EMAIL!</span>
+                  <span className="font-pixel text-[9px]">MESSAGE &amp; EMAIL COPIED TO CLIPBOARD!</span>
                 </div>
               )}
 
@@ -299,7 +295,7 @@ export function Contact() {
                   className="btn-2d-red group/submit w-full text-base py-3.5 px-6 rounded-full shadow-[4px_5px_0px_#1E232B] hover:shadow-[0_0_18px_rgba(21,128,61,0.5),5px_7px_0px_#1E232B]"
                 >
                   <span className="key-2d key-2d-red w-5 h-5 text-[9px] group-hover/submit:rotate-12 transition-transform">A</span>
-                  <span className="font-pixel text-[10px]">SEND MESSAGE VIA EMAIL</span>
+                  <span className="font-pixel text-[10px]">TRANSMIT MESSAGE</span>
                   <Send className="w-4 h-4 fill-white ml-1 group-hover/submit:translate-x-1 group-hover/submit:-translate-y-1 transition-transform" />
                 </button>
               </form>

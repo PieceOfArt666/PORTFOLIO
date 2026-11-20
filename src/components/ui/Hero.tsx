@@ -184,15 +184,6 @@ export function Hero() {
               </a>
             )}
 
-            <a
-              href={`mailto:${PERSONAL_INFO.email}`}
-              onClick={() => soundEffects.playSelect()}
-              className="w-11 h-11 rounded-full bg-white border-3 border-[#1E232B] shadow-[3px_3px_0px_#1E232B] hover:-translate-y-1.5 hover:scale-110 hover:shadow-[5px_7px_0px_#F59E0B] hover:border-[#F59E0B] hover:bg-[#FEF3C7] active:translate-y-[2px] active:scale-95 active:shadow-[1px_1px_0px_#1E232B] flex items-center justify-center text-[#1E232B] hover:text-[#D97706] font-pixel text-xs transition-all group/soc"
-              title="Send Direct Email"
-            >
-              <span className="group-hover/soc:scale-125 transition-transform inline-block">@</span>
-            </a>
-
             <span className="font-pixel text-[8px] text-slate-500 ml-2 hidden sm:inline">
               SELECT LINK
             </span>

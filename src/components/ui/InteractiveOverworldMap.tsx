@@ -58,6 +58,18 @@ const STAGES = [
     badge: '🥈 2ND PRIZE • EXR JAM',
     label: 'STAGE 3',
   },
+  {
+    id: 'haunted-house',
+    name: 'STAGE 4: THE HAUNTED HOUSE',
+    type: '3D PSYCHOLOGICAL HORROR',
+    desc: 'The House Always Wins - Survive the rigged contract, acoustic stealth, and cursed dice',
+    x: 75.8,
+    y: 41.5,
+    color: '#7C3AED',
+    icon: '4',
+    badge: 'IN PROGRESS • WIP',
+    label: 'STAGE 4',
+  },
 ];
 
 export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: OverworldMapProps) {
@@ -111,7 +123,7 @@ export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: Ov
         </div>
 
         <div className="font-pixel text-[8px] text-slate-500 hidden sm:inline">
-          CLICK [START] [1] [2] OR [3]
+          CLICK [START] [1] [2] [3] OR [4]
         </div>
       </div>
 
@@ -349,6 +361,21 @@ export function InteractiveOverworldMap({ activeProjectId, onSelectProject }: Ov
                   onClick={() => soundEffects.playSelect()}
                   className="btn-2d-white text-xs py-2 px-3.5 rounded-full flex-1 sm:flex-initial text-center"
                 >
+                  <span className="font-pixel text-[8px]">VIEW DIORAMA ↓</span>
+                </a>
+              </>
+            ) : selectedStage.id === 'haunted-house' && activeProject ? (
+              <>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-100 border-2 border-[#1E232B] font-pixel text-[8px] text-purple-900">
+                  <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping" />
+                  <span>IN ACTIVE DEVELOPMENT</span>
+                </div>
+                <a
+                  href="#stage-showcase"
+                  onClick={() => soundEffects.playSelect()}
+                  className="btn-2d-red text-xs py-2 px-3.5 rounded-full flex-1 sm:flex-initial text-center inline-flex items-center justify-center gap-1"
+                >
+                  <span className="key-2d key-2d-red w-4 h-4 text-[7px]">A</span>
                   <span className="font-pixel text-[8px]">VIEW DIORAMA ↓</span>
                 </a>
               </>

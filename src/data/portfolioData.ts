@@ -127,6 +127,35 @@ export const PROJECTS: Project[] = [
     badge: "🥈 2ND PRIZE • EXR GAME JAM",
     color: "#EA580C",
   },
+  {
+    id: "haunted-house",
+    title: "The Haunted House // The House Always Wins",
+    genre: "First-Person Psychological Survival Horror",
+    tagline: "You came here to test your luck. Now let us test your judgment.",
+    description: "A first-person psychological survival horror game developed in Unity 6 URP, built strictly from 100% primitive 3D geometry and procedural synthesized audio. Players draft a contract at the courtyard mailbox choosing a lucky number from 2 to 12 before the entrance vanishes into solid wall. Rolls at the central ritual table summon predetermined paranormal entities—The Listener (acoustic stealth), The Blink Woman (voluntary blinking vs eye strain), and The Gambler (judgment and environmental deduction)—awarding cursed dice with run-altering modifiers.",
+    designRole: "Lead Game Designer & Systems Programmer (Solo In-Progress Project)",
+    engine: "Unity 6 URP (6000.6.3f1)",
+    languages: ["C#", "Unity 6 URP", "Input System", "Procedural Audio", "Greybox 3D"],
+    imageUrl: "/images/haunted-house/cover.png",
+    videoUrl: "/videos/haunted-house.mp4",
+    screenshots: [
+      "/images/haunted-house/cover.png",
+      "/images/haunted-house/screenshot-1.png",
+      "/images/haunted-house/screenshot-2.png",
+      "/images/haunted-house/screenshot-3.png",
+      "/images/haunted-house/screenshot-4.png",
+      "/images/haunted-house/screenshot-5.png"
+    ],
+    features: [
+      "The Rigged Contract: Choose a lucky number 2–12 at the mailbox before the entrance vanishes into solid wall",
+      "3 Distinct Paranormal Entities: Face The Listener (acoustic stealth), The Blink Woman (eye-strain timer), and The Gambler (deductive logic)",
+      "Cursed Dice Loadout: Equip Hourglass (+15s), Lantern (reveals clues), or Ash (-20% threat) dice",
+      "100% Primitive Geometry & Procedural Audio: High-tension atmosphere achieved entirely through greybox spatial framing and dynamic synthesized sound",
+      "Rigorous 89-Test Automated Suite: 11,000 seeded roll validations verifying non-repeating ghost encounters and mathematical fairness"
+    ],
+    badge: "IN DEVELOPMENT // STAGE 4",
+    color: "#7C3AED",
+  },
 ];
 
 export const SKILL_CATEGORIES: SkillCategory[] = [

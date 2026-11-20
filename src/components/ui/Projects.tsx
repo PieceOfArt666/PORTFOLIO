@@ -285,11 +285,11 @@ export function Projects() {
                   </div>
                 )}
 
-                {/* Media Switcher Bar (For games with trailer or screenshots) */}
-                {(activeProject.youtubeId || (hasScreenshots && activeProject.screenshots!.length > 1)) && (
+                {/* Media Switcher Bar (For games with trailer, video, or screenshots) */}
+                {((activeProject.youtubeId || activeProject.videoUrl) || (hasScreenshots && activeProject.screenshots!.length > 1)) && (
                   <div className="flex items-center justify-between bg-white/90 p-2 rounded-xl border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B]">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      {activeProject.youtubeId && (
+                      {(activeProject.youtubeId || activeProject.videoUrl) && (
                         <button
                           onClick={() => {
                             soundEffects.playSelect();
@@ -302,7 +302,7 @@ export function Projects() {
                           }`}
                         >
                           <Film className="w-3 h-3" />
-                          <span>TRAILER</span>
+                          <span>{activeProject.videoUrl ? 'TEASER' : 'TRAILER'}</span>
                         </button>
                       )}
 
@@ -376,6 +376,12 @@ export function Projects() {
                         <span className="font-pixel text-[8px] text-amber-900 bg-amber-100 border-2 border-[#1E232B] px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
                           <span>🥈</span>
                           <span>EXR GAME JAM 2ND PLACE</span>
+                        </span>
+                      )}
+                      {activeProject.id === 'haunted-house' && (
+                        <span className="font-pixel text-[8px] text-purple-900 bg-purple-100 border-2 border-[#1E232B] px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                          <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
+                          <span>IN DEVELOPMENT • GREYBOX HORROR</span>
                         </span>
                       )}
                     </div>
@@ -494,7 +500,7 @@ export function Projects() {
                           </button>
                         )}
                       </div>
-                    ) : (
+                    ) : activeProject.id === 'hgc' ? (
                       <div className="flex flex-wrap items-center gap-2">
                         {activeProject.awardUrl && (
                           <a
@@ -537,6 +543,26 @@ export function Projects() {
                             <span className="key-2d key-2d-red w-3.5 h-3.5 text-[7px] group-hover/btn:rotate-12 transition-transform">A</span>
                             <span className="font-pixel text-[8px]">PLAY</span>
                           </a>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-50 border-2 border-[#1E232B] font-pixel text-[8px] text-purple-900 shadow-2xs">
+                          <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
+                          <span>IN PROGRESS • 89 UNIT TESTS PASSING</span>
+                        </span>
+                        {activeProject.videoUrl && (
+                          <button
+                            onClick={() => {
+                              soundEffects.playSelect();
+                              setActiveMediaTab('trailer');
+                            }}
+                            className="btn-2d-red text-xs py-1.5 px-3.5 rounded-full group/teaser inline-flex items-center gap-1.5"
+                            title="Watch In-Engine Teaser Clip"
+                          >
+                            <Film className="w-3.5 h-3.5 text-white group-hover/teaser:scale-125 transition-transform" />
+                            <span className="font-pixel text-[8px]">WATCH TEASER</span>
+                          </button>
                         )}
                       </div>
                     )}

@@ -51,33 +51,28 @@ export function ScrollProgressWarp({ currentTheme = 'zelda' }: ScrollProgressWar
         </motion.div>
       </div>
 
-      {/* 2. Floating 2D Green Warp Pipe / Quick-Elevator Button */}
+      {/* 2. Floating Console Warp Button (Positioned cleanly directly above PHONES STEREO bar) */}
       {showWarpButton && (
         <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.8 }}
+          initial={{ opacity: 0, y: 15, scale: 0.85 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 30, scale: 0.8 }}
+          exit={{ opacity: 0, y: 15, scale: 0.85 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-          className="fixed bottom-6 right-6 z-40"
+          className="fixed bottom-10 sm:bottom-9 right-3 sm:right-5 z-40 pointer-events-auto"
         >
           <button
             onClick={handleWarpTop}
-            className="group flex flex-col items-center cursor-pointer focus:outline-none"
-            title="Warp Pipe: Return to World 1-1 (Top)"
+            className="group flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E60012] hover:bg-[#CC0010] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] hover:shadow-[3px_3px_0px_#1E232B] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer select-none text-white focus:outline-none"
+            title="Warp 1-1: Return to Top"
           >
-            {/* Peeking Micro Power-up Creature On Hover */}
-            <div className="text-sm opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300 pointer-events-none select-none">
+            {/* Peeking Micro Power-up Creature */}
+            <span className="text-[10px] group-hover:-translate-y-0.5 group-hover:scale-125 transition-transform duration-200 select-none">
               {getThemePeeker()}
-            </div>
-
-            {/* Pipe Lip / Portal */}
-            <div className="pipe-rim px-3 py-1 flex items-center gap-1.5 shadow-[3px_4px_0px_#1E232B] group-hover:-translate-y-1 group-hover:shadow-[4px_6px_0px_#1E232B] group-active:translate-y-1 group-active:shadow-[1px_1px_0px_#1E232B] transition-all">
-              <span className="font-pixel text-[8px] text-white animate-bounce group-hover:scale-125">▲</span>
-              <span className="font-pixel text-[8px] text-white group-hover:tracking-wider transition-all">WARP 1-1</span>
-            </div>
-
-            {/* Pipe Neck */}
-            <div className="pipe-body w-14 h-4 shadow-[3px_4px_0px_#1E232B]" />
+            </span>
+            <span className="font-pixel text-[8px] text-white flex items-center gap-1 font-black tracking-wide">
+              <span className="text-[7px] animate-bounce">▲</span>
+              <span>WARP 1-1</span>
+            </span>
           </button>
         </motion.div>
       )}

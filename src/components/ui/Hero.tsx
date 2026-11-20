@@ -34,7 +34,7 @@ export function Hero() {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen flex flex-col justify-between pt-32 pb-12 px-4 sm:px-6 z-10">
+    <section id="hero" className="relative min-h-[calc(100vh-4rem)] lg:min-h-screen flex flex-col justify-between pt-24 sm:pt-28 md:pt-32 pb-8 sm:pb-12 px-4 sm:px-6 z-10">
       <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center my-auto">
         {/* Left Column: 2D Nintendo Title & Player 1 Editorial */}
         <motion.div

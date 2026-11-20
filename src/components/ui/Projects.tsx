@@ -196,25 +196,25 @@ export function Projects() {
         />
 
         {/* 2. Interactive Stage Milestone Track (No Boxes, Round Stone Pedestals) */}
-        <div id="stage-showcase" className="mt-14 mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+        <div id="stage-showcase" className="mt-14 mb-8 flex flex-wrap items-center justify-center gap-2 sm:gap-4 md:gap-6">
           {PROJECTS.map((project, idx) => {
             const isSelected = selectedProjectId === project.id;
             return (
               <button
                 key={project.id}
                 onClick={() => handleStageSelect(project.id)}
-                className={`flex items-center gap-2.5 px-4 sm:px-5 py-2.5 rounded-full border-3 border-[#1E232B] transition-all cursor-pointer group/pill ${
+                className={`flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border-3 border-[#1E232B] transition-all cursor-pointer group/pill ${
                   isSelected
                     ? 'bg-[var(--theme-primary)] text-white shadow-[4px_5px_0px_#1E232B] -translate-y-1 scale-105'
                     : 'bg-white text-[#1E232B] hover:bg-[#FEF08A] hover:-translate-y-1 hover:scale-105 shadow-[2px_3px_0px_#1E232B] hover:shadow-[3px_5px_0px_#1E232B]'
                 }`}
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center font-pixel text-[10px] font-black border-2 border-[#1E232B] transition-transform group-hover/pill:rotate-12 ${
+                <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center font-pixel text-[9px] sm:text-[10px] font-black border-2 border-[#1E232B] transition-transform group-hover/pill:rotate-12 ${
                   isSelected ? 'bg-white text-[var(--theme-primary)]' : 'bg-slate-100 text-[#1E232B]'
                 }`}>
                   {idx + 1}
                 </div>
-                <span className="font-pixel text-[9px] font-bold">
+                <span className="font-pixel text-[8px] sm:text-[9px] font-bold">
                   {project.title.toUpperCase()}
                 </span>
               </button>
@@ -231,7 +231,7 @@ export function Projects() {
           className="relative max-w-5xl mx-auto"
         >
           {/* Grassy Hill Platform Base with Stepped Roots */}
-          <div className="grassy-hill-shelf p-6 sm:p-10 border-x-4 border-b-4 border-[#1E232B] shadow-[6px_10px_0px_#1E232B] overflow-hidden">
+          <div className="grassy-hill-shelf p-4 sm:p-6 lg:p-10 border-x-4 border-b-4 border-[#1E232B] shadow-[6px_10px_0px_#1E232B] overflow-hidden">
             {/* Top Scalloped Fringe */}
             <div className="pixel-grass-fringe-bar w-full absolute top-0 left-0 right-0 z-10" />
 

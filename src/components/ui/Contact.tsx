@@ -287,7 +287,7 @@ export function Contact() {
                       placeholder="Mario Mario"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-sm font-bold transition-all shadow-xs"
+                      className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-base sm:text-sm font-bold transition-all shadow-xs"
                     />
                   </div>
 
@@ -301,7 +301,7 @@ export function Contact() {
                       placeholder="mario@nintendo.jp"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-sm font-bold transition-all shadow-xs"
+                      className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-base sm:text-sm font-bold transition-all shadow-xs"
                     />
                   </div>
                 </div>
@@ -316,7 +316,7 @@ export function Contact() {
                     placeholder="Game Prototyping / Studio Role Inquiry"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-sm font-bold transition-all shadow-xs"
+                    className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-base sm:text-sm font-bold transition-all shadow-xs"
                   />
                 </div>
 
@@ -330,7 +330,7 @@ export function Contact() {
                     placeholder="Tell me about your game idea, studio role, or project..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-sm font-bold transition-all resize-none shadow-xs"
+                    className="w-full px-4 py-3 rounded-2xl bg-white border-3 border-[#1E232B] text-[#1E232B] placeholder-slate-400 focus:outline-none focus:border-[#E60012] text-base sm:text-sm font-bold transition-all resize-none shadow-xs"
                   />
                 </div>
 

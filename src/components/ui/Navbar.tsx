@@ -127,12 +127,12 @@ export function Navbar({
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-2 sm:px-6 py-2.5 pointer-events-none">
-      <nav className="max-w-6xl mx-auto bg-white border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] rounded-2xl px-3 sm:px-4 py-2 pointer-events-auto transition-all">
+    <header className="fixed top-0 left-0 right-0 z-50 px-2 sm:px-6 py-1.5 sm:py-2.5 pointer-events-none">
+      <nav className="max-w-6xl mx-auto bg-white border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 pointer-events-auto transition-all">
         {/* Desktop Single-Line Layout */}
-        <div className="flex items-center justify-between gap-1.5 sm:gap-3">
+        <div className="flex items-center justify-between gap-1 sm:gap-3">
           {/* Left: 2D Nintendo Player 1 Name & Live HUD Score */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             <a 
               href="#hero" 
               onClick={() => soundEffects.playSelect()}
@@ -144,7 +144,7 @@ export function Navbar({
               </div>
 
               <div>
-                <div className="font-pixel text-[10px] sm:text-xs text-[#1E232B] tracking-wider font-black group-hover:text-[var(--theme-primary)] transition-colors leading-none whitespace-nowrap">
+                <div className="font-pixel text-[9px] xs:text-[10px] sm:text-xs text-[#1E232B] tracking-wider font-black group-hover:text-[var(--theme-primary)] transition-colors leading-none whitespace-nowrap">
                   {PERSONAL_INFO.name.toUpperCase()}
                 </div>
                 <div className="text-[9px] font-mono font-bold text-slate-500 mt-0.5 hidden 2xl:block">
@@ -157,13 +157,13 @@ export function Navbar({
             <div className="relative flex-shrink-0">
               <button
                 onClick={handleCoinClick}
-                className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-lg bg-[#FEF3C7] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#1E232B] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer select-none group"
+                className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-[#FEF3C7] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#1E232B] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer select-none group"
                 title={`Click to collect ${currentTheme === 'zelda' ? 'rupee' : currentTheme === 'retro' ? 'star' : 'coin'}!`}
               >
                 <span className="text-[#F59E0B] font-bold text-xs leading-none group-hover:rotate-12 group-hover:scale-120 transition-transform inline-block">
                   {getCurrencyIcon()}
                 </span>
-                <span className="font-pixel text-[9px] text-[#1E232B]">
+                <span className="font-pixel text-[8px] sm:text-[9px] text-[#1E232B]">
                   x{coins.toString().padStart(2, '0')}
                 </span>
               </button>
@@ -206,14 +206,14 @@ export function Navbar({
           </div>
 
           {/* Right: Background Toggle, Theme Switcher, Sound FX & Let's Talk CTA */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {/* Background Style Switcher */}
             <button
               onClick={() => {
                 soundEffects.playSelect();
                 onToggleBgStyle?.();
               }}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-100 hover:bg-[#FEF3C7] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#1E232B] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer select-none font-pixel text-[8px] text-[#1E232B] group/bg flex-shrink-0"
+              className="w-7 h-7 sm:w-auto p-0 sm:px-2.5 sm:py-1 rounded-full bg-slate-100 hover:bg-[#FEF3C7] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#1E232B] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer select-none font-pixel text-[8px] text-[#1E232B] group/bg flex items-center justify-center gap-1 flex-shrink-0"
               title={`Background: ${bgStyle === 'white' ? 'Pure White (Click for Console Parallax)' : 'Game Console Parallax (Click for Pure White)'}`}
             >
               {bgStyle === 'white' ? (
@@ -235,7 +235,7 @@ export function Navbar({
                 soundEffects.playSelect();
                 onCycleTheme?.();
               }}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full bg-slate-100 hover:bg-[#FEF3C7] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#1E232B] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer select-none font-pixel text-[8px] text-[#1E232B] group/thm flex-shrink-0"
+              className="w-7 h-7 sm:w-auto p-0 sm:px-2.5 sm:py-1 rounded-full bg-slate-100 hover:bg-[#FEF3C7] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_#1E232B] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer select-none font-pixel text-[8px] text-[#1E232B] group/thm flex items-center justify-center gap-1 flex-shrink-0"
               title="Switch Theme: 🌿 Zelda ↔ 🍄 Mario ↔ 👾 GBA"
             >
               <span className="group-hover/thm:rotate-45 group-hover/thm:scale-120 transition-transform inline-block">{getThemeIcon()}</span>
@@ -259,16 +259,16 @@ export function Navbar({
             <a
               href="#contact"
               onClick={() => soundEffects.playPowerup()}
-              className="btn-2d-red text-[10px] sm:text-xs py-1 sm:py-1.5 px-2.5 sm:px-3 rounded-full inline-flex items-center gap-1 flex-shrink-0 whitespace-nowrap"
+              className="btn-2d-red text-[9px] sm:text-xs py-1 sm:py-1.5 px-2 sm:px-3 rounded-full inline-flex items-center gap-1 flex-shrink-0 whitespace-nowrap"
             >
-              <Sparkles className="w-3 h-3 fill-white" />
-              <span className="font-pixel text-[8px] sm:text-[9px]">GOAL</span>
+              <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white" />
+              <span className="font-pixel text-[7px] sm:text-[9px]">GOAL</span>
             </a>
           </div>
         </div>
 
         {/* Mobile & Tablet Level Navigation Strip (< xl screens): Evenly distributed 6 level buttons, zero overflow, zero scrollbar */}
-        <div className="flex xl:hidden items-center justify-between gap-1 pt-2 mt-1.5 border-t border-slate-100 no-scrollbar">
+        <div className="flex xl:hidden items-center justify-between gap-0.5 sm:gap-1 pt-1.5 sm:pt-2 mt-1 sm:mt-1.5 border-t border-slate-100 no-scrollbar">
           {navLinks.map((item) => {
             const isActive = activeSection === item.id;
             return (
@@ -276,7 +276,7 @@ export function Navbar({
                 key={item.id}
                 href={`#${item.id}`}
                 onClick={() => soundEffects.playSelect()}
-                className={`flex-1 text-center py-1 rounded-md border-2 transition-all font-mono font-bold text-[9px] sm:text-[10px] ${
+                className={`flex-1 text-center py-0.5 sm:py-1 rounded-md border-2 transition-all font-mono font-bold text-[8px] sm:text-[10px] ${
                   isActive
                     ? 'bg-[var(--theme-primary)] text-white border-[#1E232B] shadow-[1px_1px_0px_#1E232B] font-black'
                     : 'border-transparent text-slate-600 bg-slate-50 hover:bg-slate-100'

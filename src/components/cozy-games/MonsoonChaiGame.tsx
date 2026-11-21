@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Flame, Droplets, Sparkles, RotateCcw, Volume2, VolumeX, 
+  Flame, Droplets, Sparkles, RotateCcw, VolumeX, 
   Heart, BookOpen, CheckCircle2, ChevronRight
 } from 'lucide-react';
 import { chaiAudio } from './chaiAudio';
@@ -12,16 +12,15 @@ interface SpiceItem {
   malayalamName: string;
   icon: string;
   color: string;
-  description: string;
-  flavor: string;
+  ayurveda: string;
 }
 
 const AVAILABLE_SPICES: SpiceItem[] = [
-  { id: 'cardamom', name: 'Cardamom', malayalamName: 'Elaichi', icon: '🌿', color: '#10B981', description: 'Sweet, floral & highly aromatic', flavor: '+Floral Fragrance' },
-  { id: 'ginger', name: 'Fresh Ginger', malayalamName: 'Inji', icon: '🫚', color: '#F59E0B', description: 'Fiery, warming monsoon kick', flavor: '+Spicy Warmth' },
-  { id: 'cinnamon', name: 'Cinnamon Bark', malayalamName: 'Karukapatta', icon: '🪵', color: '#B45309', description: 'Rich woody sweetness', flavor: '+Deep Sweetness' },
-  { id: 'cloves', name: 'Cloves', malayalamName: 'Grampoo', icon: '🌰', color: '#78350F', description: 'Pungent, comforting bite', flavor: '+Aromatic Punch' },
-  { id: 'tea', name: 'Assam Tea Leaves', malayalamName: 'Chaya Podi', icon: '🍃', color: '#451A03', description: 'Strong, brisk malty base', flavor: '+Bold Body' },
+  { id: 'cardamom', name: 'Cardamom', malayalamName: 'Elaichi', icon: '🌿', color: '#34D399', ayurveda: 'Aids digestion & cools the mind' },
+  { id: 'ginger', name: 'Fresh Ginger', malayalamName: 'Inji', icon: '🫚', color: '#FBBF24', ayurveda: 'Ignites agni (digestive fire) & boosts immunity' },
+  { id: 'cinnamon', name: 'Cinnamon Bark', malayalamName: 'Karukapatta', icon: '🪵', color: '#D97706', ayurveda: 'Improves circulation & warms the heart' },
+  { id: 'cloves', name: 'Cloves', malayalamName: 'Grampoo', icon: '🌰', color: '#92400E', ayurveda: 'Soothes throat & eases monsoon chills' },
+  { id: 'tea', name: 'Assam Tea Leaves', malayalamName: 'Chaya Podi', icon: '🍃', color: '#451A03', ayurveda: 'Rich brisk antioxidants & alertness' },
 ];
 
 const COZY_MEMORIES = [
@@ -45,8 +44,15 @@ const COZY_MEMORIES = [
   }
 ];
 
+interface ImpactParticle {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  size: number;
+}
+
 export function MonsoonChaiGame() {
-  // Step 1: Mortar grind, Step 2: Boil & Milk, Step 3: Meter Pour, Step 4: Savor & Story
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   // Sound & Rain state
@@ -55,28 +61,31 @@ export function MonsoonChaiGame() {
   // Step 1: Spice selection & grinding
   const [mortarSpices, setMortarSpices] = useState<string[]>(['tea']);
   const [grindProgress, setGrindProgress] = useState(0);
-  const [grindShake, setGrindShake] = useState(false);
+  const [isStriking, setIsStriking] = useState(false);
+  const [particles, setParticles] = useState<ImpactParticle[]>([]);
 
   // Step 2: Boil & Ingredients
   const [hasAddedSpices, setHasAddedSpices] = useState(false);
   const [milkAdded, setMilkAdded] = useState(false);
+  const [isPouringMilk, setIsPouringMilk] = useState(false);
   const [sweetener, setSweetener] = useState<'none' | 'jaggery' | 'sugar'>('none');
-  const [flameLevel, setFlameLevel] = useState<number>(50); // 0 to 100
-  const [brewColorTime, setBrewColorTime] = useState(0); // steeping progress
+  const [flameLevel, setFlameLevel] = useState<number>(60);
+  const [brewColorTime, setBrewColorTime] = useState(0);
+  const [bubbleRipples, setBubbleRipples] = useState<number[]>([1, 2, 3]);
 
-  // Step 3: Pouring
+  // Step 3: Meter Chai Pouring
   const [isPouring, setIsPouring] = useState(false);
   const [pourProgress, setPourProgress] = useState(0);
   const [frothScore, setFrothScore] = useState(0);
 
-  // Step 4: Savor
+  // Step 4: Savor & Story
   const [sipsRemaining, setSipsRemaining] = useState(4);
   const [memoryIdx, setMemoryIdx] = useState(0);
 
-  // Canvas ref for raindrop glass effect
+  // Canvas ref for raindrop glass simulation
   const rainCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Handle rain simulation on canvas
+  // Advanced Procedural Rain on Glass Simulation
   useEffect(() => {
     const canvas = rainCanvasRef.current;
     if (!canvas) return;
@@ -84,39 +93,93 @@ export function MonsoonChaiGame() {
     if (!ctx) return;
 
     let animId: number;
-    let width = (canvas.width = canvas.offsetWidth || 500);
-    let height = (canvas.height = canvas.offsetHeight || 380);
+    let width = (canvas.width = canvas.offsetWidth || 600);
+    let height = (canvas.height = canvas.offsetHeight || 420);
 
-    const drops: Array<{ x: number; y: number; length: number; speed: number; opacity: number }> = [];
-    for (let i = 0; i < 45; i++) {
-      drops.push({
+    // Droplets with mass, velocity, and trail trails
+    interface RainDrop {
+      x: number;
+      y: number;
+      r: number;
+      vy: number;
+      trail: Array<{ x: number; y: number; r: number; alpha: number }>;
+    }
+
+    const activeDrops: RainDrop[] = [];
+    for (let i = 0; i < 35; i++) {
+      activeDrops.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        length: 12 + Math.random() * 18,
-        speed: 2 + Math.random() * 4,
-        opacity: 0.2 + Math.random() * 0.35,
+        r: 1.5 + Math.random() * 3.5,
+        vy: 1.2 + Math.random() * 2.8,
+        trail: [],
+      });
+    }
+
+    // Static micro-condensation drops on glass
+    const microCondensation: Array<{ x: number; y: number; r: number; alpha: number }> = [];
+    for (let i = 0; i < 90; i++) {
+      microCondensation.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: 0.8 + Math.random() * 1.5,
+        alpha: 0.15 + Math.random() * 0.3,
       });
     }
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Soft rain streaks
-      ctx.strokeStyle = '#93C5FD';
-      ctx.lineWidth = 1.5;
-
-      for (const d of drops) {
+      // 1. Draw static micro condensation droplets
+      for (const m of microCondensation) {
         ctx.beginPath();
-        ctx.globalAlpha = d.opacity;
-        ctx.moveTo(d.x, d.y);
-        ctx.lineTo(d.x - 2, d.y + d.length);
-        ctx.stroke();
+        ctx.fillStyle = `rgba(224, 242, 254, ${m.alpha})`;
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-        d.y += d.speed;
-        d.x -= 0.5;
-        if (d.y > height) {
-          d.y = -20;
-          d.x = Math.random() * width;
+      // 2. Draw falling drops with refractive glow
+      for (const drop of activeDrops) {
+        // Draw droplet trail
+        for (let t = drop.trail.length - 1; t >= 0; t--) {
+          const pt = drop.trail[t];
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(186, 230, 253, ${pt.alpha})`;
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fill();
+          pt.alpha -= 0.015;
+          if (pt.alpha <= 0) {
+            drop.trail.splice(t, 1);
+          }
+        }
+
+        // Draw main drop with specular highlight
+        const grad = ctx.createRadialGradient(
+          drop.x - drop.r * 0.3, drop.y - drop.r * 0.3, drop.r * 0.1,
+          drop.x, drop.y, drop.r
+        );
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+        grad.addColorStop(0.5, 'rgba(186, 230, 253, 0.6)');
+        grad.addColorStop(1, 'rgba(125, 211, 252, 0.25)');
+
+        ctx.beginPath();
+        ctx.fillStyle = grad;
+        ctx.arc(drop.x, drop.y, drop.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Droplet movement
+        drop.y += drop.vy;
+        drop.x += (Math.random() - 0.5) * 0.4; // slight organic wobble
+
+        // Leave trailing bead occasionally
+        if (Math.random() > 0.8) {
+          drop.trail.push({ x: drop.x, y: drop.y - drop.r, r: drop.r * 0.5, alpha: 0.4 });
+        }
+
+        if (drop.y > height + 10) {
+          drop.y = -10;
+          drop.x = Math.random() * width;
+          drop.r = 1.5 + Math.random() * 3.5;
         }
       }
 
@@ -127,8 +190,8 @@ export function MonsoonChaiGame() {
 
     const handleResize = () => {
       if (!canvas) return;
-      width = canvas.width = canvas.offsetWidth || 500;
-      height = canvas.height = canvas.offsetHeight || 380;
+      width = canvas.width = canvas.offsetWidth || 600;
+      height = canvas.height = canvas.offsetHeight || 420;
     };
     window.addEventListener('resize', handleResize);
 
@@ -138,21 +201,22 @@ export function MonsoonChaiGame() {
     };
   }, []);
 
-  // Boil timer loop
+  // Simmer & Boil Loop in Step 2
   useEffect(() => {
     if (step !== 2 || !hasAddedSpices) return;
 
     const interval = setInterval(() => {
-      if (flameLevel > 20) {
+      if (flameLevel > 15) {
         chaiAudio.playBubble();
-        setBrewColorTime(prev => Math.min(100, prev + (flameLevel > 70 ? 2.5 : 1.2)));
+        setBrewColorTime(prev => Math.min(100, prev + (flameLevel > 70 ? 3 : 1.5)));
+        setBubbleRipples([Math.random(), Math.random(), Math.random()]);
       }
-    }, 450);
+    }, 420);
 
     return () => clearInterval(interval);
   }, [step, hasAddedSpices, flameLevel]);
 
-  // Handle pouring loop
+  // Pouring loop in Step 3
   useEffect(() => {
     if (!isPouring || step !== 3) return;
 
@@ -164,43 +228,60 @@ export function MonsoonChaiGame() {
           chaiAudio.playCupClink();
           return 100;
         }
-        return prev + 2.5;
+        return prev + 3;
       });
 
-      setFrothScore(prev => Math.min(100, prev + 2.2));
+      setFrothScore(prev => Math.min(100, prev + 2.8));
     }, 100);
 
     return () => clearInterval(interval);
   }, [isPouring, step]);
 
-  // Toggle ambient rain
+  // Ambient rain sound toggle
   const handleToggleRain = () => {
     if (rainActive) {
       chaiAudio.stopRain();
       setRainActive(false);
     } else {
-      chaiAudio.startRain(0.12);
+      chaiAudio.startRain(0.15);
       setRainActive(true);
     }
   };
 
   // Add spice to mortar
   const handleAddSpice = (spiceId: string) => {
-    if (mortarSpices.length >= 5) return;
+    if (mortarSpices.length >= 6) return;
     chaiAudio.playSpiceCrunch();
     setMortarSpices(prev => [...prev, spiceId]);
   };
 
-  // Grind mortar
-  const handleGrind = () => {
-    chaiAudio.playGrind();
+  // Kinetic pestle strike with particle spray
+  const handlePestleStrike = () => {
+    chaiAudio.playPestleImpact();
     chaiAudio.playSpiceCrunch();
-    setGrindShake(true);
-    setTimeout(() => setGrindShake(false), 200);
-    setGrindProgress(prev => Math.min(100, prev + 22));
+    chaiAudio.playGrind();
+    setIsStriking(true);
+    setTimeout(() => setIsStriking(false), 240);
+
+    // Spawn 8 aromatic particle bursts
+    const newParticles: ImpactParticle[] = [];
+    const colors = ['#FBBF24', '#34D399', '#D97706', '#92400E', '#FEF08A'];
+    for (let i = 0; i < 8; i++) {
+      newParticles.push({
+        id: Date.now() + i,
+        x: (Math.random() - 0.5) * 80,
+        y: (Math.random() - 0.5) * 60 - 20,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 3 + Math.random() * 5,
+      });
+    }
+    setParticles(newParticles);
+    setTimeout(() => setParticles([]), 450);
+
+    setGrindProgress(prev => Math.min(100, prev + 25));
   };
 
-  // Reset to start a new cup
+  // Reset to brew a new cup
   const handleRestart = () => {
     chaiAudio.playCupClink();
     setStep(1);
@@ -208,8 +289,9 @@ export function MonsoonChaiGame() {
     setGrindProgress(0);
     setHasAddedSpices(false);
     setMilkAdded(false);
+    setIsPouringMilk(false);
     setSweetener('none');
-    setFlameLevel(50);
+    setFlameLevel(60);
     setBrewColorTime(0);
     setPourProgress(0);
     setFrothScore(0);
@@ -217,7 +299,7 @@ export function MonsoonChaiGame() {
     setMemoryIdx((prev) => (prev + 1) % COZY_MEMORIES.length);
   };
 
-  // Sip chai
+  // Savor a sip
   const handleSip = () => {
     if (sipsRemaining <= 0) return;
     chaiAudio.playCupClink();
@@ -227,56 +309,83 @@ export function MonsoonChaiGame() {
     }
   };
 
-  // Helper color calculation for boiling tea
+  // Color gradient for the simmering tea liquor
   const getTeaLiquorColor = () => {
-    if (!hasAddedSpices) return '#93C5FD'; // pure water
+    if (!hasAddedSpices) return '#93C5FD'; // pure warm water
     if (milkAdded) {
-      // Golden creamy masala hue
-      return brewColorTime > 60 ? '#C48858' : '#D6AB86';
+      // Warm golden spiced masala hue
+      return brewColorTime > 60 ? '#B46A36' : '#CFA07E';
     }
     // Deep amber herbal decoction
     if (brewColorTime < 30) return '#C27835';
-    if (brewColorTime < 70) return '#8A3B14';
-    return '#4E1F09';
+    if (brewColorTime < 70) return '#7C2D12';
+    return '#451A03';
   };
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] bg-[#FFFBEB] select-none">
-      {/* 1. Cozy Game Header with Ambient Audio Toggle & Step Pills */}
-      <div className="bg-[#292524] text-white px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 border-b-4 border-[#1E232B]">
+    <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#1E232B] shadow-[8px_12px_0px_#1E232B] bg-[#FFFBEB] select-none">
+      {/* SVG Shaders & Filters for Atmospheric Heat Haze & Lighting */}
+      <svg className="absolute w-0 h-0" aria-hidden="true">
+        <defs>
+          {/* Heat Shimmer Displacement Filter */}
+          <filter id="heat-shimmer" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04 0.08" numOctaves="2" seed="5" result="noise">
+              <animate attributeName="baseFrequency" dur="3s" values="0.04 0.08; 0.05 0.12; 0.04 0.08" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+
+          {/* Liquid Swirl Filter */}
+          <filter id="liquid-swirl" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2" result="turbulence" />
+            <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="5" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* 1. Cozy Header with Ambient Rain Toggle, Audio Wave & Reset */}
+      <div className="bg-[#1C1917] text-white px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 border-b-4 border-[#1E232B] relative z-20">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#D97706] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] flex items-center justify-center text-lg">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#B45309] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] flex items-center justify-center text-xl shadow-inner">
             ☕
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-pixel text-[10px] text-[#FDE68A] tracking-wider">MONSOON CHAI</span>
-              <span className="text-[10px] text-amber-200/60 font-mono font-bold">• മഴക്കാല ചായ</span>
+              <span className="font-pixel text-[11px] text-[#FDE68A] tracking-wider">MONSOON CHAI</span>
+              <span className="text-[10px] text-amber-300/70 font-mono font-bold">• മഴക്കാല ചായ</span>
             </div>
-            <p className="text-[11px] text-stone-300 font-medium">A Tactile Brewing Simulation • Kerala Monsoon Verandah</p>
+            <p className="text-[11px] text-stone-300 font-medium">Tactile Kerala Verandah Brewing Sim • Game 1</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Ambient Rain Sound Button */}
+          {/* Ambient Rain Sound Button with Pulsing Wave Indicator */}
           <button
             onClick={handleToggleRain}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 border-[#1E232B] text-xs font-mono font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 border-[#1E232B] text-xs font-mono font-bold transition-all cursor-pointer ${
               rainActive
                 ? 'bg-[#38BDF8] text-[#1E232B] shadow-[2px_2px_0px_#1E232B]'
-                : 'bg-stone-700 hover:bg-stone-600 text-stone-200'
+                : 'bg-stone-800 hover:bg-stone-700 text-stone-300'
             }`}
-            title="Toggle Ambient Rainfall Soundscape"
+            title="Toggle Ambient Kerala Rainfall Audio"
           >
-            {rainActive ? <Volume2 className="w-3.5 h-3.5 animate-pulse" /> : <VolumeX className="w-3.5 h-3.5" />}
-            <span className="font-pixel text-[8px]">{rainActive ? 'RAIN: ON' : 'RAIN: MUTED'}</span>
+            {rainActive ? (
+              <span className="flex gap-0.5 items-end h-3">
+                <span className="w-1 bg-[#1E232B] animate-pulse h-2" />
+                <span className="w-1 bg-[#1E232B] animate-pulse h-3 delay-75" />
+                <span className="w-1 bg-[#1E232B] animate-pulse h-1.5 delay-150" />
+              </span>
+            ) : (
+              <VolumeX className="w-3.5 h-3.5" />
+            )}
+            <span className="font-pixel text-[8px]">{rainActive ? 'RAIN SOUND: ON' : 'RAIN SOUND: MUTED'}</span>
           </button>
 
-          {/* Reset Button */}
+          {/* Reset Cup Button */}
           <button
             onClick={handleRestart}
-            className="p-1.5 rounded-full bg-stone-700 hover:bg-stone-600 text-stone-200 border-2 border-[#1E232B] cursor-pointer"
-            title="Brew Fresh Cup"
+            className="p-1.5 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-200 border-2 border-[#1E232B] cursor-pointer hover:rotate-45 transition-transform"
+            title="Start Fresh Cup"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -284,8 +393,8 @@ export function MonsoonChaiGame() {
       </div>
 
       {/* 2. Step Navigator Breadcrumbs */}
-      <div className="bg-[#FEF3C7] px-4 sm:px-6 py-2.5 border-b-2 border-amber-200/80 flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto py-1">
+      <div className="bg-[#FEF3C7] px-4 sm:px-6 py-2.5 border-b-2 border-amber-300/80 flex items-center justify-between text-xs font-mono relative z-20">
+        <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto py-0.5">
           {[
             { num: 1, label: '1. BRUISE SPICES' },
             { num: 2, label: '2. SIMMER & BREW' },
@@ -294,7 +403,7 @@ export function MonsoonChaiGame() {
           ].map((s) => (
             <div 
               key={s.num}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-pixel transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-pixel transition-all ${
                 step === s.num
                   ? 'bg-[#D97706] text-white border-2 border-[#1E232B] shadow-[1px_2px_0px_#1E232B]'
                   : step > s.num
@@ -308,125 +417,161 @@ export function MonsoonChaiGame() {
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-1.5 text-stone-500 font-pixel text-[8px]">
-          <Sparkles className="w-3 h-3 text-amber-500" />
-          <span>ZERO STRESS • TACTILE PLAY</span>
+        <div className="hidden md:flex items-center gap-1.5 text-stone-600 font-pixel text-[8px]">
+          <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin" />
+          <span>TACTILE SHADERS & WEBAUDIO</span>
         </div>
       </div>
 
-      {/* 3. Main Interactive Cooking Canvas Container */}
-      <div className="relative min-h-[460px] p-4 sm:p-8 flex flex-col justify-between overflow-hidden">
-        {/* Soft Kerala Monsoon Rain Backdrop Canvas */}
+      {/* 3. Main Interactive Canvas Stage */}
+      <div className="relative min-h-[490px] p-4 sm:p-8 flex flex-col justify-between overflow-hidden">
+        {/* Procedural Raindrop on Glass Simulation Canvas */}
         <canvas
           ref={rainCanvasRef}
-          className="absolute inset-0 w-full h-full pointer-events-none opacity-40 z-0"
+          className="absolute inset-0 w-full h-full pointer-events-none opacity-45 z-0"
         />
 
-        {/* Ambient Steam Particles in background */}
-        <div className="absolute top-8 right-12 pointer-events-none opacity-25">
-          <div className="w-16 h-28 bg-gradient-to-t from-amber-400/20 to-transparent blur-xl animate-pulse" />
-        </div>
+        {/* Volumetric Warm Ambient Sunlight & Rain Silhouette */}
+        <div className="absolute -top-10 -left-10 w-96 h-96 bg-gradient-to-br from-amber-400/20 via-orange-300/10 to-transparent rounded-full blur-3xl pointer-events-none z-0" />
+        <div className="absolute -bottom-10 -right-10 w-80 h-80 bg-gradient-to-tl from-emerald-500/15 via-transparent to-transparent rounded-full blur-2xl pointer-events-none z-0" />
 
-        {/* STAGE 1: SPICE SELECTION & MORTAR GRINDING */}
+        {/* STAGE 1: BRASS MORTAR & PESTLE GRINDING WITH PARTICLES */}
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
               key="step-1"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
               className="relative z-10 flex flex-col items-center justify-between flex-1 gap-6"
             >
               <div className="text-center max-w-lg">
-                <span className="font-pixel text-[9px] px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 shadow-xs">
-                  STAGE 1: THE MORTAR & PESTLE
+                <span className="font-pixel text-[9px] px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 shadow-xs inline-flex items-center gap-1">
+                  <span>STAGE 1: THE TRADITIONAL URULI MORTAR</span>
                 </span>
                 <h3 className="font-display font-black text-2xl sm:text-3xl text-stone-800 mt-2">
                   Select & Bruise Your Spices
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                  Click fresh spices on the tray to drop them into the brass mortar, then tap the pestle to crush them into fragrant aromatics.
+                  Tap spices on the wooden tray to drop them in. Then tap the brass pestle to strike & release essential oils!
                 </p>
               </div>
 
-              {/* The Central Mortar & Pestle Visual */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
-                {/* Brass Mortar */}
-                <div 
-                  className={`relative w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-gradient-to-br from-[#F59E0B] via-[#D97706] to-[#78350F] p-3.5 border-4 border-[#1E232B] shadow-[6px_8px_0px_#1E232B] flex items-center justify-center transition-transform ${
-                    grindShake ? 'scale-105 -rotate-2' : ''
-                  }`}
-                >
-                  {/* Inner mortar hollow bowl */}
-                  <div className="relative w-full h-full rounded-full bg-gradient-to-b from-[#451A03] to-[#1C1917] border-3 border-amber-900/60 shadow-inner flex flex-wrap items-center justify-center p-4 overflow-hidden">
-                    {mortarSpices.length === 0 ? (
-                      <span className="font-pixel text-[8px] text-amber-300/40 text-center">
-                        MORTAR IS EMPTY<br />TAP SPICES BELOW
-                      </span>
-                    ) : (
-                      mortarSpices.map((sId, idx) => {
-                        const spice = AVAILABLE_SPICES.find(item => item.id === sId);
-                        return (
-                          <motion.span
-                            key={idx}
-                            initial={{ scale: 0, y: -20 }}
-                            animate={{ scale: grindProgress > 60 ? 0.75 : 1, y: 0 }}
-                            className="text-2xl sm:text-3xl filter drop-shadow select-none cursor-pointer"
-                            title={`${spice?.name} (${spice?.malayalamName})`}
-                          >
-                            {spice?.icon}
-                          </motion.span>
-                        );
-                      })
-                    )}
+              {/* The Realistic 3D Brass Mortar & Kinetic Pestle Visual */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full my-auto">
+                {/* Brass Mortar Bowl Container */}
+                <div className="relative">
+                  {/* Particle Spray Container on Impact */}
+                  {particles.map(p => (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 1, scale: 0, x: 0, y: 0 }}
+                      animate={{ opacity: 0, scale: 1.5, x: p.x, y: p.y }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none z-30"
+                      style={{ backgroundColor: p.color, width: p.size, height: p.size }}
+                    />
+                  ))}
 
-                    {/* Aromatic dust particle glow when ground */}
-                    {grindProgress > 20 && (
-                      <div 
-                        className="absolute inset-0 bg-amber-500/20 mix-blend-screen pointer-events-none animate-pulse" 
-                        style={{ opacity: grindProgress / 100 }}
-                      />
-                    )}
+                  {/* Brass Mortar Vessel */}
+                  <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-gradient-to-br from-[#FBBF24] via-[#D97706] to-[#78350F] p-4 border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] flex items-center justify-center">
+                    {/* Metallic Rim Highlight */}
+                    <div className="absolute inset-1 rounded-full border-2 border-yellow-200/50 pointer-events-none" />
+
+                    {/* Deep Cavity Bowl */}
+                    <div className="relative w-full h-full rounded-full bg-gradient-to-b from-[#451A03] via-[#292524] to-[#1C1917] border-3 border-amber-900 shadow-inner flex flex-wrap items-center justify-center p-5 overflow-hidden">
+                      {/* Spices Inside Bowl */}
+                      {mortarSpices.length === 0 ? (
+                        <span className="font-pixel text-[8px] text-amber-300/40 text-center">
+                          MORTAR EMPTY<br />SELECT SPICES
+                        </span>
+                      ) : (
+                        mortarSpices.map((sId, idx) => {
+                          const spice = AVAILABLE_SPICES.find(item => item.id === sId);
+                          return (
+                            <motion.span
+                              key={idx}
+                              initial={{ scale: 0, y: -25 }}
+                              animate={{ 
+                                scale: grindProgress > 50 ? 0.75 : 1, 
+                                y: isStriking ? 5 : 0 
+                              }}
+                              className="text-2xl sm:text-3xl filter drop-shadow select-none"
+                              title={`${spice?.name} (${spice?.malayalamName})`}
+                            >
+                              {spice?.icon}
+                            </motion.span>
+                          );
+                        })
+                      )}
+
+                      {/* Ground Spice Powder Texture Layer */}
+                      {grindProgress > 20 && (
+                        <div 
+                          className="absolute inset-0 bg-gradient-to-t from-amber-600/30 to-amber-900/20 mix-blend-color-dodge pointer-events-none animate-pulse"
+                          style={{ opacity: grindProgress / 100 }}
+                        />
+                      )}
+                    </div>
                   </div>
 
-                  {/* Brass pestle handle resting in mortar */}
-                  <div className="absolute -top-6 -right-3 w-8 h-24 bg-gradient-to-r from-amber-200 via-amber-400 to-amber-700 rounded-full border-3 border-[#1E232B] rotate-25 shadow-md pointer-events-none" />
+                  {/* 3D Kinetic Pestle (Strikes down with spring bounce) */}
+                  <motion.div
+                    animate={
+                      isStriking
+                        ? { y: [0, 30, -5, 0], rotate: [25, 10, 28, 25] }
+                        : { y: [0, -6, 0], rotate: [25, 23, 25] }
+                    }
+                    transition={
+                      isStriking
+                        ? { duration: 0.24, ease: "easeInOut" }
+                        : { repeat: Infinity, duration: 2.2, ease: "easeInOut" }
+                    }
+                    onClick={handlePestleStrike}
+                    className="absolute -top-12 -right-4 w-10 h-32 bg-gradient-to-r from-amber-200 via-amber-400 to-amber-700 rounded-full border-3 border-[#1E232B] shadow-xl cursor-pointer group"
+                    title="Tap Pestle to Pound Spices"
+                  >
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-6 rounded-full bg-yellow-200/60" />
+                    <span className="absolute bottom-2 left-1/2 -translate-x-1/2 font-pixel text-[7px] text-[#1E232B] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      POUND
+                    </span>
+                  </motion.div>
                 </div>
 
-                {/* Grinding Controls & Progress */}
-                <div className="flex flex-col items-center sm:items-start gap-3">
-                  <div className="bg-white/80 backdrop-blur p-4 rounded-2xl border-3 border-[#1E232B] shadow-[3px_4px_0px_#1E232B] w-64">
+                {/* Progress & Ayurvedic Insight Box */}
+                <div className="flex flex-col items-center sm:items-start gap-3 w-full max-w-xs">
+                  <div className="bg-white/90 backdrop-blur p-4 rounded-2xl border-3 border-[#1E232B] shadow-[3px_4px_0px_#1E232B] w-full">
                     <div className="flex items-center justify-between text-xs font-mono font-bold mb-1.5 text-stone-700">
-                      <span>CRUSH & GRIND:</span>
+                      <span>ESSENTIAL OIL EXTRACTION:</span>
                       <span className="font-pixel text-amber-700">{grindProgress}%</span>
                     </div>
-                    <div className="w-full h-3 bg-stone-200 rounded-full overflow-hidden border-2 border-[#1E232B]">
+                    <div className="w-full h-3.5 bg-stone-200 rounded-full overflow-hidden border-2 border-[#1E232B] p-0.5">
                       <div 
-                        className="h-full bg-gradient-to-r from-amber-400 to-emerald-500 transition-all duration-200"
+                        className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-emerald-600 rounded-full transition-all duration-200"
                         style={{ width: `${grindProgress}%` }}
                       />
                     </div>
-                    <p className="text-[11px] text-stone-500 mt-2 font-medium">
+                    <p className="text-[11px] text-stone-600 mt-2 font-medium">
                       {grindProgress >= 100 
-                        ? '✨ Perfectly bruised! Aromatics released.'
-                        : 'Tap pestle to release essential oils.'}
+                        ? '✨ Completely pulverized! Ready for boiling.'
+                        : 'Tap the pestle repeatedly to crush spices.'}
                     </p>
                   </div>
 
                   <button
-                    onClick={handleGrind}
-                    className="w-full py-3 px-6 rounded-2xl bg-[#D97706] hover:bg-[#B45309] text-white font-pixel text-xs border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] active:translate-y-1 active:shadow-[1px_1px_0px_#1E232B] transition-all cursor-pointer flex items-center justify-center gap-2"
+                    onClick={handlePestleStrike}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-[#D97706] hover:bg-[#B45309] text-white font-pixel text-xs border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] active:translate-y-1 active:shadow-[1px_1px_0px_#1E232B] transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
-                    <span>🔨 POUND PESTLE</span>
+                    <span>🔨 STRIKE PESTLE</span>
                   </button>
                 </div>
               </div>
 
-              {/* Wooden Spice Tray Selector */}
+              {/* Wooden Spice Tray Selector with Ayurvedic Tooltips */}
               <div className="w-full bg-[#E7E5E4] p-3 sm:p-4 rounded-2xl border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B]">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-pixel text-[8px] text-stone-600">WOODEN SPICE TRAY (TAP TO ADD):</span>
-                  <span className="text-xs font-mono font-bold text-stone-500">{mortarSpices.length}/5 Added</span>
+                  <span className="font-pixel text-[8px] text-stone-700">WOODEN TRAY (TAP TO ADD TO MORTAR):</span>
+                  <span className="text-xs font-mono font-bold text-stone-600">{mortarSpices.length}/6 Spices</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {AVAILABLE_SPICES.map((spice) => {
@@ -435,9 +580,10 @@ export function MonsoonChaiGame() {
                       <button
                         key={spice.id}
                         onClick={() => handleAddSpice(spice.id)}
-                        className="flex flex-col items-center p-2.5 rounded-xl bg-white hover:bg-amber-50 border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] active:translate-y-0.5 transition-all text-left group cursor-pointer"
+                        className="flex flex-col items-center p-2.5 rounded-xl bg-white hover:bg-amber-50 border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] active:translate-y-0.5 transition-all text-center group cursor-pointer"
+                        title={spice.ayurveda}
                       >
-                        <span className="text-2xl group-hover:scale-110 transition-transform">{spice.icon}</span>
+                        <span className="text-2xl group-hover:scale-115 transition-transform">{spice.icon}</span>
                         <span className="font-bold text-xs text-stone-800 mt-1">{spice.name}</span>
                         <span className="text-[10px] text-amber-700 font-mono font-bold">{spice.malayalamName}</span>
                         {count > 0 && (
@@ -472,13 +618,13 @@ export function MonsoonChaiGame() {
             </motion.div>
           )}
 
-          {/* STAGE 2: SIMMER & BREW ON BRASS STOVE */}
+          {/* STAGE 2: HEAT SHADER & BOILING LIQUID SIMULATION */}
           {step === 2 && (
             <motion.div
               key="step-2"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
               className="relative z-10 flex flex-col items-center justify-between flex-1 gap-6"
             >
               <div className="text-center max-w-lg">
@@ -486,77 +632,112 @@ export function MonsoonChaiGame() {
                   STAGE 2: THE BRASS KETTLE
                 </span>
                 <h3 className="font-display font-black text-2xl sm:text-3xl text-stone-800 mt-2">
-                  Simmer, Milk & Steep
+                  Simmer, Milk & Heat Waves
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                  Add the ground aromatics, adjust flame heat to rolling boil, pour rich milk, and watch the brew darken to golden perfection.
+                  Add spices, adjust flame heat to rolling boil, and pour creamy milk to create authentic amber masala tea.
                 </p>
               </div>
 
-              {/* Boiling Saucepan Simulation */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full">
+              {/* Boiling Saucepan with Heat Shimmer & Bubble Ripples */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full my-auto">
                 <div className="relative flex flex-col items-center">
-                  {/* Animated Rising Steam Clouds */}
-                  {hasAddedSpices && (
-                    <div className="absolute -top-14 flex gap-3 pointer-events-none">
-                      <motion.div 
-                        animate={{ y: [-5, -25], opacity: [0.6, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.8, ease: "easeOut" }}
-                        className="text-2xl"
+                  {/* Heat Haze Distortion Container */}
+                  <div 
+                    className="relative"
+                    style={{ filter: flameLevel > 40 ? 'url(#heat-shimmer)' : 'none' }}
+                  >
+                    {/* Steam Particle Columns */}
+                    {hasAddedSpices && flameLevel > 20 && (
+                      <div className="absolute -top-16 inset-x-0 flex justify-center gap-4 pointer-events-none z-20">
+                        <motion.div 
+                          animate={{ y: [-5, -35], opacity: [0.8, 0], scale: [0.8, 1.4] }}
+                          transition={{ repeat: Infinity, duration: 1.8, ease: "easeOut" }}
+                          className="text-3xl text-amber-700/60"
+                        >
+                          ♨
+                        </motion.div>
+                        <motion.div 
+                          animate={{ y: [-5, -45], opacity: [0.9, 0], scale: [0.9, 1.6] }}
+                          transition={{ repeat: Infinity, duration: 1.5, delay: 0.3, ease: "easeOut" }}
+                          className="text-4xl text-amber-800/70"
+                        >
+                          ♨
+                        </motion.div>
+                      </div>
+                    )}
+
+                    {/* Saucepan Top View Vessel */}
+                    <div className="relative w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-br from-[#78350F] via-[#451A03] to-[#1C1917] p-3.5 border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] flex items-center justify-center">
+                      {/* Heavy wooden saucepan handle */}
+                      <div className="absolute -left-14 top-1/2 -translate-y-1/2 w-16 h-7 bg-[#B45309] border-3 border-[#1E232B] rounded-l-2xl shadow-md" />
+
+                      {/* Simmering Tea Liquid Pool with dynamic colors */}
+                      <div 
+                        className="relative w-full h-full rounded-full transition-colors duration-700 border-3 border-amber-900 shadow-inner flex items-center justify-center overflow-hidden"
+                        style={{ backgroundColor: getTeaLiquorColor() }}
                       >
-                        ♨
-                      </motion.div>
-                      <motion.div 
-                        animate={{ y: [-5, -30], opacity: [0.7, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.5, delay: 0.4, ease: "easeOut" }}
-                        className="text-3xl"
-                      >
-                        ♨
-                      </motion.div>
-                    </div>
-                  )}
+                        {/* Swirling Milk Vortex when milk is added */}
+                        {isPouringMilk && (
+                          <motion.div
+                            initial={{ scale: 0, rotate: 0, opacity: 0.9 }}
+                            animate={{ scale: [0, 1.3, 1], rotate: 360, opacity: [1, 0.8, 0.4] }}
+                            transition={{ duration: 1.2, ease: "easeOut" }}
+                            className="absolute inset-0 bg-radial from-white via-amber-100 to-transparent rounded-full pointer-events-none"
+                          />
+                        )}
 
-                  {/* Saucepan Top View */}
-                  <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-stone-700 p-3 border-4 border-[#1E232B] shadow-[6px_8px_0px_#1E232B] flex items-center justify-center">
-                    {/* Kettle handle */}
-                    <div className="absolute -left-12 top-1/2 -translate-y-1/2 w-14 h-6 bg-[#78350F] border-3 border-[#1E232B] rounded-l-xl" />
+                        {/* Animated Boiling Bubbles & Concentric Waves */}
+                        {hasAddedSpices && flameLevel > 20 && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            {bubbleRipples.map((seed, idx) => (
+                              <motion.div
+                                key={idx}
+                                initial={{ scale: 0.2, opacity: 0.8 }}
+                                animate={{ scale: 1.8, opacity: 0 }}
+                                transition={{ repeat: Infinity, duration: 1.2, delay: seed * 0.4 }}
+                                className="absolute w-12 h-12 rounded-full border-2 border-white/40"
+                              />
+                            ))}
+                            <span className="text-sm animate-ping opacity-75">🫧</span>
+                            <span className="text-lg animate-bounce opacity-60 ml-8">🫧</span>
+                            <span className="text-base animate-pulse opacity-80 -mt-10 mr-8">🫧</span>
+                          </div>
+                        )}
 
-                    {/* Simmering Tea Liquid Pool */}
-                    <div 
-                      className="relative w-full h-full rounded-full transition-colors duration-700 border-3 border-amber-900/60 shadow-inner flex items-center justify-center overflow-hidden"
-                      style={{ backgroundColor: getTeaLiquorColor() }}
-                    >
-                      {/* Floating Bubbles */}
-                      {hasAddedSpices && flameLevel > 20 && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs animate-ping opacity-60">🫧</span>
-                          <span className="text-base animate-pulse opacity-50 ml-6">🫧</span>
-                          <span className="text-sm animate-bounce opacity-70 -mt-8">🫧</span>
-                        </div>
-                      )}
-
-                      {!hasAddedSpices ? (
-                        <span className="font-pixel text-[8px] text-white/80 text-center px-4">
-                          WATER IS WARM<br />ADD GROUND SPICES ➔
-                        </span>
-                      ) : (
-                        <span className="font-pixel text-[8px] text-white/70 text-center drop-shadow">
-                          {milkAdded ? 'MASALA CHAI STEEPING' : 'BLACK TEA EXTRACTING'}
-                        </span>
-                      )}
+                        {!hasAddedSpices ? (
+                          <span className="font-pixel text-[8px] text-white/90 text-center px-4 drop-shadow">
+                            WATER IS WARM<br />ADD GROUND SPICES ➔
+                          </span>
+                        ) : (
+                          <span className="font-pixel text-[8px] text-white/80 text-center drop-shadow">
+                            {milkAdded ? 'MASALA CHAI STEEPING' : 'BLACK TEA EXTRACTING'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Burner Flame beneath saucepan */}
-                  <div className="flex items-center gap-1.5 mt-3">
-                    <Flame className={`w-5 h-5 ${flameLevel > 20 ? 'text-amber-500 animate-pulse' : 'text-stone-400'}`} />
-                    <span className="font-pixel text-[9px] text-stone-700">
-                      FLAME: {flameLevel > 70 ? 'ROLLING BOIL' : flameLevel > 20 ? 'GENTLE SIMMER' : 'OFF'}
+                  {/* Dynamic Gas Stove Burner with Fire Jets */}
+                  <div className="flex items-center gap-2 mt-4 px-4 py-1.5 rounded-full bg-stone-900 border-2 border-[#1E232B] shadow-md">
+                    <Flame className={`w-5 h-5 ${flameLevel > 20 ? 'text-amber-400 animate-pulse' : 'text-stone-500'}`} />
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <span 
+                          key={i}
+                          className={`w-2 h-3 rounded-full transition-all ${
+                            (flameLevel / 20) >= i ? 'bg-amber-400 shadow-[0_0_8px_#F59E0B]' : 'bg-stone-700'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-pixel text-[8px] text-stone-300 ml-1">
+                      {flameLevel > 70 ? 'ROLLING BOIL' : flameLevel > 20 ? 'GENTLE SIMMER' : 'OFF'}
                     </span>
                   </div>
                 </div>
 
-                {/* Cooking Controls Box */}
+                {/* Brewing Recipe Controls Box */}
                 <div className="flex flex-col gap-3 w-full max-w-xs">
                   {/* Add Spices Button */}
                   <button
@@ -581,11 +762,13 @@ export function MonsoonChaiGame() {
                     disabled={!hasAddedSpices || milkAdded}
                     onClick={() => {
                       chaiAudio.playLiquidPour();
+                      setIsPouringMilk(true);
+                      setTimeout(() => setIsPouringMilk(false), 1200);
                       setMilkAdded(true);
                     }}
                     className={`p-3 rounded-2xl font-pixel text-xs border-3 border-[#1E232B] flex items-center justify-between transition-all ${
                       !milkAdded && hasAddedSpices
-                        ? 'bg-white hover:bg-stone-100 text-[#1E232B] shadow-[3px_4px_0px_#1E232B] cursor-pointer'
+                        ? 'bg-white hover:bg-amber-50 text-[#1E232B] shadow-[3px_4px_0px_#1E232B] cursor-pointer'
                         : milkAdded
                         ? 'bg-emerald-100 text-emerald-800 border-emerald-500 cursor-default'
                         : 'bg-stone-200 text-stone-400 border-stone-300 cursor-not-allowed'
@@ -631,7 +814,7 @@ export function MonsoonChaiGame() {
                   {/* Flame Intensity Slider */}
                   <div className="bg-white/90 p-3 rounded-2xl border-3 border-[#1E232B] shadow-[2px_3px_0px_#1E232B]">
                     <div className="flex justify-between items-center text-xs font-mono font-bold text-stone-700 mb-1">
-                      <span>STOVE FLAME:</span>
+                      <span>STOVE BURNER:</span>
                       <span className="text-amber-700">{flameLevel}%</span>
                     </div>
                     <input 
@@ -646,7 +829,7 @@ export function MonsoonChaiGame() {
                 </div>
               </div>
 
-              {/* Next Step Button */}
+              {/* Step Navigation */}
               <div className="flex justify-between w-full">
                 <button
                   onClick={() => setStep(1)}
@@ -674,13 +857,13 @@ export function MonsoonChaiGame() {
             </motion.div>
           )}
 
-          {/* STAGE 3: THE HIGH-POUR METER CHAI */}
+          {/* STAGE 3: THE HIGH-POUR METER CHAI WITH LIQUID SHADER */}
           {step === 3 && (
             <motion.div
               key="step-3"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
               className="relative z-10 flex flex-col items-center justify-between flex-1 gap-6"
             >
               <div className="text-center max-w-lg">
@@ -691,37 +874,44 @@ export function MonsoonChaiGame() {
                   The Kerala Meter Chai Pour
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                  Hold down the pour button to pull the tea from height into the clay kulhad. A steady pour aerates the milk and builds rich golden froth!
+                  Hold down the pour button to pull the tea from height into the clay kulhad. Aerating the milk creates that signature velvety crema foam!
                 </p>
               </div>
 
-              {/* Pouring Interaction Canvas / Graphic */}
-              <div className="flex flex-col items-center justify-center gap-6 w-full max-w-md">
-                <div className="relative w-64 h-64 bg-amber-50 rounded-3xl border-4 border-[#1E232B] shadow-[6px_8px_0px_#1E232B] flex flex-col items-center justify-between p-4 overflow-hidden">
-                  {/* Top kettle pouring stream */}
-                  <div className="w-16 h-10 bg-amber-700 rounded-b-xl border-3 border-[#1E232B] flex items-center justify-center text-white font-pixel text-[8px]">
-                    KETTLE
-                  </div>
+              {/* High-Pour Physical Canvas Frame */}
+              <div className="flex flex-col items-center justify-center gap-6 w-full max-w-md my-auto">
+                <div className="relative w-64 h-64 bg-gradient-to-b from-amber-50 to-amber-100/90 rounded-3xl border-4 border-[#1E232B] shadow-[6px_8px_0px_#1E232B] flex flex-col items-center justify-between p-4 overflow-hidden">
+                  {/* Top Brass Kettle Vessel */}
+                  <motion.div 
+                    animate={isPouring ? { rotate: [-10, -18, -14], y: [0, 4, 0] } : { rotate: 0 }}
+                    className="w-20 h-11 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-800 rounded-b-2xl border-3 border-[#1E232B] flex items-center justify-center text-white font-pixel text-[8px] shadow-md"
+                  >
+                    BRASS JUG
+                  </motion.div>
 
-                  {/* Flowing liquid stream */}
+                  {/* Flowing Liquid Stream with Droplet Mist */}
                   {isPouring && (
                     <motion.div
                       initial={{ scaleY: 0 }}
                       animate={{ scaleY: 1 }}
-                      className="w-3.5 h-36 bg-gradient-to-b from-[#B45309] to-[#D97706] rounded-full shadow-md"
-                    />
+                      className="w-4 h-36 bg-gradient-to-b from-[#B45309] via-[#D97706] to-[#F59E0B] rounded-full shadow-lg relative"
+                    >
+                      {/* Splashing mist droplets */}
+                      <span className="absolute -left-2 top-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      <span className="absolute -right-2 top-3/4 w-1.5 h-1.5 rounded-full bg-yellow-200 animate-ping delay-100" />
+                    </motion.div>
                   )}
 
-                  {/* Clay Kulhad Cup at Bottom */}
-                  <div className="relative w-28 h-24 bg-[#B45309] rounded-b-3xl border-4 border-[#1E232B] shadow-inner flex flex-col justify-end p-2 overflow-hidden">
-                    {/* Fill level inside cup */}
+                  {/* Clay Kulhad Cup at Bottom with Froth Crema */}
+                  <div className="relative w-32 h-26 bg-gradient-to-b from-[#9A3412] to-[#7C2D12] rounded-b-3xl border-4 border-[#1E232B] shadow-inner flex flex-col justify-end p-2.5 overflow-hidden">
+                    {/* Liquid fill inside cup */}
                     <div 
-                      className="w-full bg-[#C48858] rounded-b-2xl transition-all duration-300 relative flex items-center justify-center"
+                      className="w-full bg-[#B46A36] rounded-b-2xl transition-all duration-300 relative flex items-center justify-center"
                       style={{ height: `${Math.min(100, pourProgress)}%` }}
                     >
-                      {/* Frothy crema head */}
-                      {pourProgress > 20 && (
-                        <div className="absolute top-0 inset-x-0 h-4 bg-[#FDE68A] rounded-full opacity-90 flex items-center justify-center">
+                      {/* Thick Aerated Foam Head */}
+                      {pourProgress > 15 && (
+                        <div className="absolute top-0 inset-x-0 h-4 bg-gradient-to-r from-[#FEF08A] via-[#FDE68A] to-[#FBBF24] rounded-full opacity-95 flex items-center justify-center shadow-xs">
                           <span className="text-[8px] animate-pulse">🫧</span>
                         </div>
                       )}
@@ -729,7 +919,7 @@ export function MonsoonChaiGame() {
                   </div>
                 </div>
 
-                {/* Pour Button & Froth Gauge */}
+                {/* Pour Action Button & Gauges */}
                 <div className="w-full flex flex-col items-center gap-3">
                   <div className="w-full bg-white p-3 rounded-2xl border-3 border-[#1E232B] shadow-[2px_3px_0px_#1E232B]">
                     <div className="flex justify-between items-center text-xs font-mono font-bold text-stone-700 mb-1">
@@ -765,7 +955,7 @@ export function MonsoonChaiGame() {
                 </div>
               </div>
 
-              {/* Complete Step Button */}
+              {/* Complete Step Navigation */}
               <div className="flex justify-end w-full">
                 <button
                   disabled={pourProgress < 90}
@@ -786,13 +976,13 @@ export function MonsoonChaiGame() {
             </motion.div>
           )}
 
-          {/* STAGE 4: SAVOR & UNLOCK MONSOON MEMORY */}
+          {/* STAGE 4: SAVOR ON WINDOWSILL WITH FLICKERING OIL LAMP & JOURNAL */}
           {step === 4 && (
             <motion.div
               key="step-4"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
               className="relative z-10 flex flex-col items-center justify-between flex-1 gap-6"
             >
               <div className="text-center max-w-lg">
@@ -804,36 +994,48 @@ export function MonsoonChaiGame() {
                   Warmth in the Monsoon
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                  Your handcrafted chai rests on the rainy verandah windowsill. Take a sip and read from the journal.
+                  Your handcrafted chai rests on the rainy verandah windowsill beside the flickering brass lamp. Take a warm sip.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl items-center">
-                {/* Steaming Clay Kulhad on Windowsill */}
-                <div className="bg-gradient-to-b from-amber-100/90 to-amber-200/90 backdrop-blur p-6 rounded-3xl border-3 border-[#1E232B] shadow-[6px_6px_0px_#1E232B] flex flex-col items-center justify-center text-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl items-center my-auto">
+                {/* Steaming Ceramic Kulhad & Flickering Brass Lamp */}
+                <div className="bg-gradient-to-b from-amber-100/95 to-amber-200/95 backdrop-blur p-6 rounded-3xl border-3 border-[#1E232B] shadow-[6px_6px_0px_#1E232B] flex flex-col items-center justify-center text-center relative overflow-hidden">
                   {/* Steam Animation */}
                   {sipsRemaining > 0 && (
-                    <div className="flex gap-2 -mb-2 pointer-events-none">
+                    <div className="flex gap-3 -mb-3 pointer-events-none">
                       <motion.div 
-                        animate={{ y: [-5, -25], opacity: [0.8, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.6, ease: "easeOut" }}
-                        className="text-2xl text-amber-700"
+                        animate={{ y: [-5, -30], opacity: [0.8, 0], scale: [0.9, 1.4] }}
+                        transition={{ repeat: Infinity, duration: 1.8, ease: "easeOut" }}
+                        className="text-3xl text-amber-700"
                       >
                         ♨
                       </motion.div>
                       <motion.div 
-                        animate={{ y: [-5, -30], opacity: [0.9, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.4, delay: 0.3, ease: "easeOut" }}
-                        className="text-3xl text-amber-800"
+                        animate={{ y: [-5, -35], opacity: [0.9, 0], scale: [1, 1.6] }}
+                        transition={{ repeat: Infinity, duration: 1.5, delay: 0.3, ease: "easeOut" }}
+                        className="text-4xl text-amber-800"
                       >
                         ♨
                       </motion.div>
                     </div>
                   )}
 
-                  {/* Cup Icon */}
-                  <div className="text-6xl sm:text-7xl filter drop-shadow-md select-none my-2">
-                    🍵
+                  {/* Cup Icon with Flickering Brass Lamp */}
+                  <div className="flex items-center gap-4 my-2">
+                    <span className="text-6xl sm:text-7xl filter drop-shadow-md select-none">
+                      🍵
+                    </span>
+                    <div className="flex flex-col items-center">
+                      <motion.span 
+                        animate={{ scale: [1, 1.15, 0.95, 1], opacity: [0.9, 1, 0.85, 0.9] }}
+                        transition={{ repeat: Infinity, duration: 1.4 }}
+                        className="text-3xl select-none"
+                      >
+                        🪔
+                      </motion.span>
+                      <span className="font-pixel text-[6px] text-amber-900 mt-0.5">NILAVILAKKU</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 mt-2">
@@ -903,7 +1105,7 @@ export function MonsoonChaiGame() {
       </div>
 
       {/* 4. Footer Note */}
-      <div className="bg-[#292524] px-4 py-2 text-center border-t-2 border-[#1E232B]">
+      <div className="bg-[#1C1917] px-4 py-2.5 text-center border-t-2 border-[#1E232B]">
         <p className="font-mono text-[11px] text-amber-200/80 font-bold">
           Tip: Leave rain audio running in the background while exploring Abhijith's game projects! 🌧️
         </p>

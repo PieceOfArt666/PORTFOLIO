@@ -191,7 +191,7 @@ export function BentoKeepsakesGame() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-pixel text-[11px] text-amber-300 tracking-wider">{currentThemeData.title.toUpperCase()}</span>
-              <span className="text-[10px] text-stone-400 font-mono font-bold">• 弁当 パッキング</span>
+              <span className="text-[10px] text-stone-400 font-mono font-bold">• PACKING PUZZLE</span>
             </div>
             <p className="text-[11px] text-stone-300 font-medium">Satisfying Spatial Packing Puzzle • Game 3</p>
           </div>

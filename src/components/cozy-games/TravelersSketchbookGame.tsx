@@ -469,7 +469,7 @@ export function TravelersSketchbookGame() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-pixel text-[11px] text-purple-300 tracking-wider">TRAVELER'S SKETCHBOOK</span>
-              <span className="text-[10px] text-stone-400 font-mono font-bold">• 郵便 絵葉書</span>
+              <span className="text-[10px] text-stone-400 font-mono font-bold">• POSTCARD STUDIO</span>
             </div>
             <p className="text-[11px] text-stone-300 font-medium">Vintage Stamp & Postcard Studio • Game 6</p>
           </div>

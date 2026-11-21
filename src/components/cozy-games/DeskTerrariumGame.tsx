@@ -279,7 +279,7 @@ export function DeskTerrariumGame() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-pixel text-[11px] text-emerald-300 tracking-wider">DESK TERRARIUM</span>
-              <span className="text-[10px] text-stone-400 font-mono font-bold">• 盆栽 禅</span>
+              <span className="text-[10px] text-stone-400 font-mono font-bold">• ZEN BONSAI</span>
             </div>
             <p className="text-[11px] text-stone-300 font-medium">Zen Garden Bonsai Pruning & Lo-Fi Music Box • Game 2</p>
           </div>

@@ -492,7 +492,7 @@ export function MonsoonChaiGame() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-pixel text-[11px] text-[#FDE68A] tracking-wider">MONSOON CHAI</span>
-              <span className="text-[10px] text-amber-300/70 font-mono font-bold">• മഴക്കാല ചായ</span>
+              <span className="text-[10px] text-amber-300/70 font-mono font-bold">• MONSOON BREW</span>
             </div>
             <p className="text-[11px] text-stone-300 font-medium">Tactile Kerala Verandah Brewing Sim • Game 1</p>
           </div>
@@ -910,7 +910,7 @@ export function MonsoonChaiGame() {
                     <Droplets className="w-4 h-4" />
                   </button>
 
-                  {/* Culturally Accurate Kerala Sweeteners: Sharkara (ശർക്കര) & Panchasara (പഞ്ചസാര) */}
+                  {/* Kerala Sweeteners: Jaggery (Sharkara) & Cane Sugar */}
                   <div className="bg-white/90 p-3 rounded-2xl border-3 border-[#1E232B] shadow-[2px_3px_0px_#1E232B]">
                     <span className="font-pixel text-[8px] text-stone-600 block mb-1.5">CHOOSE SWEETENER:</span>
                     <div className="grid grid-cols-2 gap-2">
@@ -925,7 +925,7 @@ export function MonsoonChaiGame() {
                             : 'bg-stone-100 hover:bg-stone-200 border-stone-300 text-stone-700'
                         }`}
                       >
-                        🍯 Sharkara (ശർക്കര)
+                        🍯 Jaggery (Sharkara)
                       </button>
                       <button
                         onClick={() => {
@@ -938,7 +938,7 @@ export function MonsoonChaiGame() {
                             : 'bg-stone-100 hover:bg-stone-200 border-stone-300 text-stone-700'
                         }`}
                       >
-                        🍬 Panchasara (പഞ്ചസാര)
+                        🍬 Cane Sugar
                       </button>
                     </div>
                   </div>
@@ -1163,7 +1163,7 @@ export function MonsoonChaiGame() {
                         🪔
                       </motion.span>
                       <span className="font-pixel text-[7px] text-amber-900 mt-1 font-bold">NILAVILAKKU</span>
-                      <span className="text-[9px] text-stone-500 font-mono">നിലവിളക്ക്</span>
+                      <span className="text-[9px] text-stone-500 font-mono">Brass Oil Lamp</span>
                     </div>
                   </div>
 

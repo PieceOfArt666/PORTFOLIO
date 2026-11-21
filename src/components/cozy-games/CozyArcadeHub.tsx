@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, Clock, Play } from 'lucide-react';
 import { MonsoonChaiGame } from './MonsoonChaiGame';
 import { DeskTerrariumGame } from './DeskTerrariumGame';
+import { BentoKeepsakesGame } from './BentoKeepsakesGame';
 
 export type CozyGameId = 'monsoon-chai' | 'desk-terrarium' | 'bento-keepsakes' | 'travelers-sketchbook';
 
@@ -40,7 +41,7 @@ const COZY_GAMES: CozyGameDef[] = [
     title: 'Bento & Keepsakes',
     subtitle: 'Satisfying Packing • Geometric Fits',
     icon: '🍱',
-    status: 'UP NEXT',
+    status: 'PLAYABLE',
     themeColor: '#EA580C',
     description: 'Fit rounded onigiri, brass keys, and retro Game Boy cartridges snugly into wooden compartments with weighted click physics.'
   },
@@ -49,14 +50,14 @@ const COZY_GAMES: CozyGameDef[] = [
     title: "Traveler's Sketchbook",
     subtitle: 'Vintage Stamps • Postcard Studio',
     icon: '📖',
-    status: 'COMING SOON',
+    status: 'UP NEXT',
     themeColor: '#7C3AED',
     description: 'Dip carved wooden stamps in matcha and terracotta inks, arrange stationery on cream pages, and export your cozy postcard.'
   }
 ];
 
 export function CozyArcadeHub() {
-  const [selectedGameId, setSelectedGameId] = useState<CozyGameId>('desk-terrarium');
+  const [selectedGameId, setSelectedGameId] = useState<CozyGameId>('bento-keepsakes');
 
   const activeGame = COZY_GAMES.find(g => g.id === selectedGameId) || COZY_GAMES[0];
 
@@ -90,7 +91,7 @@ export function CozyArcadeHub() {
 
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-xs font-mono font-bold self-start sm:self-auto shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>2 OF 4 GAMES PLAYABLE NOW</span>
+            <span>3 OF 4 GAMES PLAYABLE NOW</span>
           </div>
         </motion.div>
 
@@ -146,14 +147,16 @@ export function CozyArcadeHub() {
             <MonsoonChaiGame />
           ) : selectedGameId === 'desk-terrarium' ? (
             <DeskTerrariumGame />
+          ) : selectedGameId === 'bento-keepsakes' ? (
+            <BentoKeepsakesGame />
           ) : (
-            /* Preview / Queued Card for Games 3 and 6 */
+            /* Preview / Queued Card for Game 6 (Traveler's Sketchbook) */
             <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] bg-white p-8 sm:p-12 text-center">
-              <div className="w-20 h-20 rounded-3xl bg-amber-50 border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] flex items-center justify-center text-4xl mx-auto mb-4">
+              <div className="w-20 h-20 rounded-3xl bg-purple-50 border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] flex items-center justify-center text-4xl mx-auto mb-4">
                 {activeGame.icon}
               </div>
 
-              <span className="font-pixel text-[9px] px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 inline-block mb-3">
+              <span className="font-pixel text-[9px] px-3 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-900 inline-block mb-3">
                 {activeGame.status === 'UP NEXT' ? 'NEXT TO IMPLEMENT' : 'QUEUED COZY GAME'}
               </span>
 
@@ -164,20 +167,20 @@ export function CozyArcadeHub() {
                 {activeGame.description}
               </p>
 
-              <div className="inline-flex items-center gap-2 p-3 rounded-2xl bg-amber-50 border-2 border-amber-200 text-xs font-mono font-bold text-amber-900 max-w-md text-left">
-                <Clock className="w-4 h-4 flex-shrink-0 text-amber-700" />
+              <div className="inline-flex items-center gap-2 p-3 rounded-2xl bg-purple-50 border-2 border-purple-200 text-xs font-mono font-bold text-purple-900 max-w-md text-left">
+                <Clock className="w-4 h-4 flex-shrink-0 text-purple-700" />
                 <span>
-                  Games 1 & 2 are ready to play! Once approved, Bento & Keepsakes will be built next.
+                  Games 1, 2 & 3 are playable now! Traveler's Sketchbook will unlock upon your approval.
                 </span>
               </div>
 
               <div className="mt-6">
                 <button
-                  onClick={() => setSelectedGameId('desk-terrarium')}
-                  className="py-2.5 px-5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-pixel text-xs border-2 border-[#1E232B] shadow-[3px_3px_0px_#1E232B] cursor-pointer inline-flex items-center gap-2"
+                  onClick={() => setSelectedGameId('bento-keepsakes')}
+                  className="py-2.5 px-5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white font-pixel text-xs border-2 border-[#1E232B] shadow-[3px_3px_0px_#1E232B] cursor-pointer inline-flex items-center gap-2"
                 >
                   <Play className="w-3.5 h-3.5" />
-                  <span>PLAY DESK TERRARIUM NOW</span>
+                  <span>PLAY BENTO & KEEPSAKES NOW</span>
                 </button>
               </div>
             </div>

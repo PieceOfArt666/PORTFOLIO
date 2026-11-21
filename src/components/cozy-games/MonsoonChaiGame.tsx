@@ -34,7 +34,7 @@ const COZY_MEMORIES = [
     title: "Ginger Against the Mist",
     subtitle: "Munnar hill station memory",
     story: "Waking up before dawn when the fog blanketed the tea plantations. Grandmother bruised two fat roots of ginger on the granite grinding stone—hot enough to banish the mountain chill before the morning whistle.",
-    quote: "\"Warm your hands on the clay first. The tea warms the rest.\""
+    quote: "\"Warm your hands on the glass first. The tea warms the rest.\""
   },
   {
     title: "The Meter Chai Acrobat",
@@ -50,6 +50,164 @@ interface ImpactParticle {
   y: number;
   color: string;
   size: number;
+}
+
+// Authentic Illustrated Kerala 'Chaya Glass' (The iconic fluted tea stall glass)
+interface KeralaChayaGlassProps {
+  fillPercent?: number; // 0 to 100
+  teaColor?: string;
+  size?: 'md' | 'lg';
+  className?: string;
+}
+
+function KeralaChayaGlass({
+  fillPercent = 100,
+  teaColor = '#B46A36',
+  size = 'md',
+  className = '',
+}: KeralaChayaGlassProps) {
+  const width = size === 'lg' ? 140 : 105;
+  const height = size === 'lg' ? 180 : 135;
+
+  const innerTop = 22;
+  const innerBottom = 114;
+  const totalInnerH = innerBottom - innerTop;
+  const clampedFill = Math.max(0, Math.min(100, fillPercent));
+  const liquidH = (clampedFill / 100) * totalInnerH;
+  const liquidY = innerBottom - liquidH;
+
+  return (
+    <div className={`relative flex items-center justify-center ${className}`}>
+      <svg
+        viewBox="0 0 120 150"
+        width={width}
+        height={height}
+        className="filter drop-shadow-[0_8px_16px_rgba(25,15,5,0.35)] select-none"
+      >
+        <defs>
+          {/* Glass Wall Reflection Gradient */}
+          <linearGradient id="chayaGlassWall" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.45" />
+            <stop offset="15%" stopColor="#E0F2FE" stopOpacity="0.12" />
+            <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.06" />
+            <stop offset="85%" stopColor="#BAE6FD" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.45" />
+          </linearGradient>
+
+          {/* Rich Amber Spiced Tea Gradient */}
+          <linearGradient id="chayaLiquidGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#D97706" />
+            <stop offset="45%" stopColor={teaColor} />
+            <stop offset="100%" stopColor="#5B2207" />
+          </linearGradient>
+
+          {/* Golden Aerated Crema Froth */}
+          <linearGradient id="chayaFrothGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#FEF08A" />
+            <stop offset="50%" stopColor="#FDE68A" />
+            <stop offset="100%" stopColor="#F59E0B" />
+          </linearGradient>
+
+          {/* Tapered Kerala Glass Interior Clip Path */}
+          <clipPath id="chayaInnerClip">
+            <path d="M 27 22 L 36 114 C 37 119, 44 122, 52 122 L 68 122 C 76 122, 83 119, 84 114 L 93 22 Z" />
+          </clipPath>
+        </defs>
+
+        {/* 1. Wooden Coaster Saucer */}
+        <ellipse cx="60" cy="142" rx="46" ry="6.5" fill="#1E232B" />
+        <ellipse cx="60" cy="140" rx="44" ry="5.5" fill="#78350F" />
+        <ellipse cx="60" cy="139" rx="41" ry="4.2" fill="#B45309" stroke="#1E232B" strokeWidth="1" />
+
+        {/* 2. Heavy Solid Glass Bottom Base */}
+        <path
+          d="M 32 114 L 36 133 C 37 137, 43 140, 51 140 L 69 140 C 77 140, 83 137, 84 133 L 88 114 Z"
+          fill="rgba(224, 242, 254, 0.4)"
+          stroke="#1E232B"
+          strokeWidth="2.5"
+        />
+
+        {/* 3. Liquid Pool (Clipped to interior) */}
+        <g clipPath="url(#chayaInnerClip)">
+          {clampedFill > 0 && (
+            <>
+              {/* Tea Liquid Body */}
+              <rect
+                x="20"
+                y={liquidY}
+                width="80"
+                height={liquidH + 15}
+                fill="url(#chayaLiquidGrad)"
+                className="transition-all duration-300"
+              />
+
+              {/* Surface Tea Liquid Ring */}
+              <ellipse
+                cx="60"
+                cy={liquidY}
+                rx={17 + (liquidH / totalInnerH) * 14}
+                ry="4"
+                fill="#F59E0B"
+                opacity="0.8"
+              />
+
+              {/* Velvety Aerated Foam Crema */}
+              {clampedFill > 12 && (
+                <g className="transition-all duration-300">
+                  <ellipse
+                    cx="60"
+                    cy={liquidY}
+                    rx={18 + (liquidH / totalInnerH) * 14}
+                    ry="5.5"
+                    fill="url(#chayaFrothGrad)"
+                    stroke="#D97706"
+                    strokeWidth="0.8"
+                  />
+                  {/* Micro Froth Crema Bubbles */}
+                  <circle cx="51" cy={liquidY - 1} r="1.6" fill="#FFFBEB" opacity="0.9" />
+                  <circle cx="58" cy={liquidY + 1} r="2.3" fill="#FEF3C7" opacity="0.95" />
+                  <circle cx="66" cy={liquidY - 0.5} r="1.8" fill="#FFFBEB" opacity="0.9" />
+                  <circle cx="63" cy={liquidY + 2} r="1.2" fill="#FEF08A" opacity="0.85" />
+                  <circle cx="45" cy={liquidY} r="1.1" fill="#FEF3C7" opacity="0.75" />
+                  <circle cx="73" cy={liquidY + 0.5} r="1.3" fill="#FEF08A" opacity="0.8" />
+                </g>
+              )}
+            </>
+          )}
+
+          {/* Residual Crema Foam Rings along glass facets after sips */}
+          {clampedFill < 85 && clampedFill > 0 && (
+            <ellipse cx="60" cy="38" rx="31" ry="3.2" fill="none" stroke="#FDE68A" strokeWidth="1.2" strokeDasharray="3 4" opacity="0.75" />
+          )}
+          {clampedFill < 55 && clampedFill > 0 && (
+            <ellipse cx="60" cy="62" rx="27" ry="2.8" fill="none" stroke="#FDE68A" strokeWidth="1" strokeDasharray="4 5" opacity="0.65" />
+          )}
+          {clampedFill < 30 && clampedFill > 0 && (
+            <ellipse cx="60" cy="88" rx="23" ry="2.4" fill="none" stroke="#FDE68A" strokeWidth="0.8" strokeDasharray="3 3" opacity="0.55" />
+          )}
+        </g>
+
+        {/* 4. Glass Outer Shell & Silhouette */}
+        <path
+          d="M 25 18 L 34 115 C 35 121, 42 125, 50 125 L 70 125 C 78 125, 85 121, 86 115 L 95 18 Z"
+          fill="url(#chayaGlassWall)"
+          stroke="#1E232B"
+          strokeWidth="3"
+        />
+
+        {/* Vertical Fluted Ribs of Traditional Kerala Tea Stall Glass */}
+        <line x1="41" y1="23" x2="46" y2="114" stroke="rgba(255,255,255,0.45)" strokeWidth="2.2" strokeLinecap="round" />
+        <line x1="53" y1="23" x2="55" y2="116" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="67" y1="23" x2="65" y2="116" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="79" y1="23" x2="74" y2="114" stroke="rgba(255,255,255,0.5)" strokeWidth="2.2" strokeLinecap="round" />
+
+        {/* Top Rim Glass Lip */}
+        <ellipse cx="60" cy="18" rx="35" ry="5.5" fill="none" stroke="#1E232B" strokeWidth="2.8" />
+        <ellipse cx="60" cy="18" rx="33" ry="4" fill="rgba(255,255,255,0.35)" />
+        <ellipse cx="60" cy="17" rx="30" ry="2.6" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="1.2" />
+      </svg>
+    </div>
+  );
 }
 
 export function MonsoonChaiGame() {
@@ -68,7 +226,7 @@ export function MonsoonChaiGame() {
   const [hasAddedSpices, setHasAddedSpices] = useState(false);
   const [milkAdded, setMilkAdded] = useState(false);
   const [isPouringMilk, setIsPouringMilk] = useState(false);
-  const [sweetener, setSweetener] = useState<'none' | 'jaggery' | 'sugar'>('none');
+  const [sweetener, setSweetener] = useState<'none' | 'sharkara' | 'sugar'>('none');
   const [flameLevel, setFlameLevel] = useState<number>(60);
   const [brewColorTime, setBrewColorTime] = useState(0);
   const [bubbleRipples, setBubbleRipples] = useState<number[]>([1, 2, 3]);
@@ -96,7 +254,6 @@ export function MonsoonChaiGame() {
     let width = (canvas.width = canvas.offsetWidth || 600);
     let height = (canvas.height = canvas.offsetHeight || 420);
 
-    // Droplets with mass, velocity, and trail trails
     interface RainDrop {
       x: number;
       y: number;
@@ -116,7 +273,6 @@ export function MonsoonChaiGame() {
       });
     }
 
-    // Static micro-condensation drops on glass
     const microCondensation: Array<{ x: number; y: number; r: number; alpha: number }> = [];
     for (let i = 0; i < 90; i++) {
       microCondensation.push({
@@ -130,7 +286,6 @@ export function MonsoonChaiGame() {
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // 1. Draw static micro condensation droplets
       for (const m of microCondensation) {
         ctx.beginPath();
         ctx.fillStyle = `rgba(224, 242, 254, ${m.alpha})`;
@@ -138,9 +293,7 @@ export function MonsoonChaiGame() {
         ctx.fill();
       }
 
-      // 2. Draw falling drops with refractive glow
       for (const drop of activeDrops) {
-        // Draw droplet trail
         for (let t = drop.trail.length - 1; t >= 0; t--) {
           const pt = drop.trail[t];
           ctx.beginPath();
@@ -153,7 +306,6 @@ export function MonsoonChaiGame() {
           }
         }
 
-        // Draw main drop with specular highlight
         const grad = ctx.createRadialGradient(
           drop.x - drop.r * 0.3, drop.y - drop.r * 0.3, drop.r * 0.1,
           drop.x, drop.y, drop.r
@@ -167,11 +319,9 @@ export function MonsoonChaiGame() {
         ctx.arc(drop.x, drop.y, drop.r, 0, Math.PI * 2);
         ctx.fill();
 
-        // Droplet movement
         drop.y += drop.vy;
-        drop.x += (Math.random() - 0.5) * 0.4; // slight organic wobble
+        drop.x += (Math.random() - 0.5) * 0.4;
 
-        // Leave trailing bead occasionally
         if (Math.random() > 0.8) {
           drop.trail.push({ x: drop.x, y: drop.y - drop.r, r: drop.r * 0.5, alpha: 0.4 });
         }
@@ -263,7 +413,6 @@ export function MonsoonChaiGame() {
     setIsStriking(true);
     setTimeout(() => setIsStriking(false), 240);
 
-    // Spawn 8 aromatic particle bursts
     const newParticles: ImpactParticle[] = [];
     const colors = ['#FBBF24', '#34D399', '#D97706', '#92400E', '#FEF08A'];
     for (let i = 0; i < 8; i++) {
@@ -309,14 +458,12 @@ export function MonsoonChaiGame() {
     }
   };
 
-  // Color gradient for the simmering tea liquor
+  // Color calculation for tea liquor
   const getTeaLiquorColor = () => {
-    if (!hasAddedSpices) return '#93C5FD'; // pure warm water
+    if (!hasAddedSpices) return '#93C5FD';
     if (milkAdded) {
-      // Warm golden spiced masala hue
       return brewColorTime > 60 ? '#B46A36' : '#CFA07E';
     }
-    // Deep amber herbal decoction
     if (brewColorTime < 30) return '#C27835';
     if (brewColorTime < 70) return '#7C2D12';
     return '#451A03';
@@ -324,21 +471,14 @@ export function MonsoonChaiGame() {
 
   return (
     <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#1E232B] shadow-[8px_12px_0px_#1E232B] bg-[#FFFBEB] select-none">
-      {/* SVG Shaders & Filters for Atmospheric Heat Haze & Lighting */}
+      {/* SVG Shaders & Filters for Atmospheric Heat Haze */}
       <svg className="absolute w-0 h-0" aria-hidden="true">
         <defs>
-          {/* Heat Shimmer Displacement Filter */}
           <filter id="heat-shimmer" x="-20%" y="-20%" width="140%" height="140%">
             <feTurbulence type="fractalNoise" baseFrequency="0.04 0.08" numOctaves="2" seed="5" result="noise">
               <animate attributeName="baseFrequency" dur="3s" values="0.04 0.08; 0.05 0.12; 0.04 0.08" repeatCount="indefinite" />
             </feTurbulence>
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-
-          {/* Liquid Swirl Filter */}
-          <filter id="liquid-swirl" x="-10%" y="-10%" width="120%" height="120%">
-            <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2" result="turbulence" />
-            <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="5" />
           </filter>
         </defs>
       </svg>
@@ -419,7 +559,7 @@ export function MonsoonChaiGame() {
 
         <div className="hidden md:flex items-center gap-1.5 text-stone-600 font-pixel text-[8px]">
           <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin" />
-          <span>TACTILE SHADERS & WEBAUDIO</span>
+          <span>AUTHENTIC KERALA CHAYA</span>
         </div>
       </div>
 
@@ -431,7 +571,7 @@ export function MonsoonChaiGame() {
           className="absolute inset-0 w-full h-full pointer-events-none opacity-45 z-0"
         />
 
-        {/* Volumetric Warm Ambient Sunlight & Rain Silhouette */}
+        {/* Ambient Volumetric Warm Glow */}
         <div className="absolute -top-10 -left-10 w-96 h-96 bg-gradient-to-br from-amber-400/20 via-orange-300/10 to-transparent rounded-full blur-3xl pointer-events-none z-0" />
         <div className="absolute -bottom-10 -right-10 w-80 h-80 bg-gradient-to-tl from-emerald-500/15 via-transparent to-transparent rounded-full blur-2xl pointer-events-none z-0" />
 
@@ -475,12 +615,9 @@ export function MonsoonChaiGame() {
 
                   {/* Brass Mortar Vessel */}
                   <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-gradient-to-br from-[#FBBF24] via-[#D97706] to-[#78350F] p-4 border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] flex items-center justify-center">
-                    {/* Metallic Rim Highlight */}
                     <div className="absolute inset-1 rounded-full border-2 border-yellow-200/50 pointer-events-none" />
 
-                    {/* Deep Cavity Bowl */}
                     <div className="relative w-full h-full rounded-full bg-gradient-to-b from-[#451A03] via-[#292524] to-[#1C1917] border-3 border-amber-900 shadow-inner flex flex-wrap items-center justify-center p-5 overflow-hidden">
-                      {/* Spices Inside Bowl */}
                       {mortarSpices.length === 0 ? (
                         <span className="font-pixel text-[8px] text-amber-300/40 text-center">
                           MORTAR EMPTY<br />SELECT SPICES
@@ -505,7 +642,6 @@ export function MonsoonChaiGame() {
                         })
                       )}
 
-                      {/* Ground Spice Powder Texture Layer */}
                       {grindProgress > 20 && (
                         <div 
                           className="absolute inset-0 bg-gradient-to-t from-amber-600/30 to-amber-900/20 mix-blend-color-dodge pointer-events-none animate-pulse"
@@ -515,7 +651,7 @@ export function MonsoonChaiGame() {
                     </div>
                   </div>
 
-                  {/* 3D Kinetic Pestle (Strikes down with spring bounce) */}
+                  {/* 3D Kinetic Pestle */}
                   <motion.div
                     animate={
                       isStriking
@@ -669,15 +805,12 @@ export function MonsoonChaiGame() {
 
                     {/* Saucepan Top View Vessel */}
                     <div className="relative w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-br from-[#78350F] via-[#451A03] to-[#1C1917] p-3.5 border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] flex items-center justify-center">
-                      {/* Heavy wooden saucepan handle */}
                       <div className="absolute -left-14 top-1/2 -translate-y-1/2 w-16 h-7 bg-[#B45309] border-3 border-[#1E232B] rounded-l-2xl shadow-md" />
 
-                      {/* Simmering Tea Liquid Pool with dynamic colors */}
                       <div 
                         className="relative w-full h-full rounded-full transition-colors duration-700 border-3 border-amber-900 shadow-inner flex items-center justify-center overflow-hidden"
                         style={{ backgroundColor: getTeaLiquorColor() }}
                       >
-                        {/* Swirling Milk Vortex when milk is added */}
                         {isPouringMilk && (
                           <motion.div
                             initial={{ scale: 0, rotate: 0, opacity: 0.9 }}
@@ -687,7 +820,6 @@ export function MonsoonChaiGame() {
                           />
                         )}
 
-                        {/* Animated Boiling Bubbles & Concentric Waves */}
                         {hasAddedSpices && flameLevel > 20 && (
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             {bubbleRipples.map((seed, idx) => (
@@ -718,7 +850,7 @@ export function MonsoonChaiGame() {
                     </div>
                   </div>
 
-                  {/* Dynamic Gas Stove Burner with Fire Jets */}
+                  {/* Gas Stove Burner */}
                   <div className="flex items-center gap-2 mt-4 px-4 py-1.5 rounded-full bg-stone-900 border-2 border-[#1E232B] shadow-md">
                     <Flame className={`w-5 h-5 ${flameLevel > 20 ? 'text-amber-400 animate-pulse' : 'text-stone-500'}`} />
                     <div className="flex gap-1">
@@ -778,22 +910,22 @@ export function MonsoonChaiGame() {
                     <Droplets className="w-4 h-4" />
                   </button>
 
-                  {/* Sweetener Options */}
+                  {/* Culturally Accurate Kerala Sweeteners: Sharkara (ശർക്കര) & Panchasara (പഞ്ചസാര) */}
                   <div className="bg-white/90 p-3 rounded-2xl border-3 border-[#1E232B] shadow-[2px_3px_0px_#1E232B]">
                     <span className="font-pixel text-[8px] text-stone-600 block mb-1.5">CHOOSE SWEETENER:</span>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => {
                           chaiAudio.playCupClink();
-                          setSweetener('jaggery');
+                          setSweetener('sharkara');
                         }}
                         className={`py-1.5 px-2 rounded-xl text-xs font-mono font-bold border-2 transition-all cursor-pointer ${
-                          sweetener === 'jaggery'
+                          sweetener === 'sharkara'
                             ? 'bg-[#B45309] text-white border-[#1E232B]'
                             : 'bg-stone-100 hover:bg-stone-200 border-stone-300 text-stone-700'
                         }`}
                       >
-                        🍯 Jaggery (Vellam)
+                        🍯 Sharkara (ശർക്കര)
                       </button>
                       <button
                         onClick={() => {
@@ -806,7 +938,7 @@ export function MonsoonChaiGame() {
                             : 'bg-stone-100 hover:bg-stone-200 border-stone-300 text-stone-700'
                         }`}
                       >
-                        🍬 Cane Sugar
+                        🍬 Panchasara (പഞ്ചസാര)
                       </button>
                     </div>
                   </div>
@@ -857,7 +989,7 @@ export function MonsoonChaiGame() {
             </motion.div>
           )}
 
-          {/* STAGE 3: THE HIGH-POUR METER CHAI WITH LIQUID SHADER */}
+          {/* STAGE 3: THE HIGH-POUR METER CHAI WITH AUTHENTIC KERALA CHAYA GLASS */}
           {step === 3 && (
             <motion.div
               key="step-3"
@@ -874,17 +1006,17 @@ export function MonsoonChaiGame() {
                   The Kerala Meter Chai Pour
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                  Hold down the pour button to pull the tea from height into the clay kulhad. Aerating the milk creates that signature velvety crema foam!
+                  Hold down the pour button to pull the tea from height into the traditional Kerala tea glass. Aerating the milk creates that signature velvety crema foam!
                 </p>
               </div>
 
               {/* High-Pour Physical Canvas Frame */}
               <div className="flex flex-col items-center justify-center gap-6 w-full max-w-md my-auto">
-                <div className="relative w-64 h-64 bg-gradient-to-b from-amber-50 to-amber-100/90 rounded-3xl border-4 border-[#1E232B] shadow-[6px_8px_0px_#1E232B] flex flex-col items-center justify-between p-4 overflow-hidden">
+                <div className="relative w-72 h-72 bg-gradient-to-b from-amber-50 to-amber-100/90 rounded-3xl border-4 border-[#1E232B] shadow-[6px_8px_0px_#1E232B] flex flex-col items-center justify-between p-4 overflow-hidden">
                   {/* Top Brass Kettle Vessel */}
                   <motion.div 
                     animate={isPouring ? { rotate: [-10, -18, -14], y: [0, 4, 0] } : { rotate: 0 }}
-                    className="w-20 h-11 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-800 rounded-b-2xl border-3 border-[#1E232B] flex items-center justify-center text-white font-pixel text-[8px] shadow-md"
+                    className="w-22 h-12 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-800 rounded-b-2xl border-3 border-[#1E232B] flex items-center justify-center text-white font-pixel text-[8px] shadow-md z-20"
                   >
                     BRASS JUG
                   </motion.div>
@@ -894,28 +1026,20 @@ export function MonsoonChaiGame() {
                     <motion.div
                       initial={{ scaleY: 0 }}
                       animate={{ scaleY: 1 }}
-                      className="w-4 h-36 bg-gradient-to-b from-[#B45309] via-[#D97706] to-[#F59E0B] rounded-full shadow-lg relative"
+                      className="w-4 h-32 bg-gradient-to-b from-[#B45309] via-[#D97706] to-[#F59E0B] rounded-full shadow-lg relative z-10"
                     >
-                      {/* Splashing mist droplets */}
                       <span className="absolute -left-2 top-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                       <span className="absolute -right-2 top-3/4 w-1.5 h-1.5 rounded-full bg-yellow-200 animate-ping delay-100" />
                     </motion.div>
                   )}
 
-                  {/* Clay Kulhad Cup at Bottom with Froth Crema */}
-                  <div className="relative w-32 h-26 bg-gradient-to-b from-[#9A3412] to-[#7C2D12] rounded-b-3xl border-4 border-[#1E232B] shadow-inner flex flex-col justify-end p-2.5 overflow-hidden">
-                    {/* Liquid fill inside cup */}
-                    <div 
-                      className="w-full bg-[#B46A36] rounded-b-2xl transition-all duration-300 relative flex items-center justify-center"
-                      style={{ height: `${Math.min(100, pourProgress)}%` }}
-                    >
-                      {/* Thick Aerated Foam Head */}
-                      {pourProgress > 15 && (
-                        <div className="absolute top-0 inset-x-0 h-4 bg-gradient-to-r from-[#FEF08A] via-[#FDE68A] to-[#FBBF24] rounded-full opacity-95 flex items-center justify-center shadow-xs">
-                          <span className="text-[8px] animate-pulse">🫧</span>
-                        </div>
-                      )}
-                    </div>
+                  {/* Authentic Illustrated Kerala Chaya Glass */}
+                  <div className="relative z-10 -mb-2">
+                    <KeralaChayaGlass 
+                      fillPercent={pourProgress} 
+                      teaColor={getTeaLiquorColor()}
+                      size="md"
+                    />
                   </div>
                 </div>
 
@@ -923,7 +1047,7 @@ export function MonsoonChaiGame() {
                 <div className="w-full flex flex-col items-center gap-3">
                   <div className="w-full bg-white p-3 rounded-2xl border-3 border-[#1E232B] shadow-[2px_3px_0px_#1E232B]">
                     <div className="flex justify-between items-center text-xs font-mono font-bold text-stone-700 mb-1">
-                      <span>CUP FILL LEVEL:</span>
+                      <span>CHAYA GLASS FILL LEVEL:</span>
                       <span className="font-pixel text-amber-700">{Math.round(pourProgress)}%</span>
                     </div>
                     <div className="w-full h-3 bg-stone-200 rounded-full overflow-hidden border-2 border-[#1E232B]">
@@ -950,7 +1074,7 @@ export function MonsoonChaiGame() {
                         : 'bg-emerald-500 text-white shadow-[2px_2px_0px_#1E232B] cursor-default'
                     }`}
                   >
-                    <span>{pourProgress < 100 ? 'HOLD TO PULL CHAI ☕' : '✓ CUP IS FULL!'}</span>
+                    <span>{pourProgress < 100 ? 'HOLD TO PULL CHAI ☕' : '✓ GLASS IS FULL!'}</span>
                   </button>
                 </div>
               </div>
@@ -976,7 +1100,7 @@ export function MonsoonChaiGame() {
             </motion.div>
           )}
 
-          {/* STAGE 4: SAVOR ON WINDOWSILL WITH FLICKERING OIL LAMP & JOURNAL */}
+          {/* STAGE 4: SAVOR ON WINDOWSILL WITH FLICKERING NILAVILAKKU & JOURNAL */}
           {step === 4 && (
             <motion.div
               key="step-4"
@@ -994,14 +1118,14 @@ export function MonsoonChaiGame() {
                   Warmth in the Monsoon
                 </h3>
                 <p className="text-xs sm:text-sm text-stone-600 mt-1">
-                  Your handcrafted chai rests on the rainy verandah windowsill beside the flickering brass lamp. Take a warm sip.
+                  Your handcrafted chai rests on the rainy verandah windowsill beside the flickering brass Nilavilakku lamp. Take a warm sip.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl items-center my-auto">
-                {/* Steaming Ceramic Kulhad & Flickering Brass Lamp */}
+                {/* Steaming Kerala Chaya Glass & Flickering Nilavilakku */}
                 <div className="bg-gradient-to-b from-amber-100/95 to-amber-200/95 backdrop-blur p-6 rounded-3xl border-3 border-[#1E232B] shadow-[6px_6px_0px_#1E232B] flex flex-col items-center justify-center text-center relative overflow-hidden">
-                  {/* Steam Animation */}
+                  {/* Rising Steam Animation */}
                   {sipsRemaining > 0 && (
                     <div className="flex gap-3 -mb-3 pointer-events-none">
                       <motion.div 
@@ -1021,34 +1145,40 @@ export function MonsoonChaiGame() {
                     </div>
                   )}
 
-                  {/* Cup Icon with Flickering Brass Lamp */}
-                  <div className="flex items-center gap-4 my-2">
-                    <span className="text-6xl sm:text-7xl filter drop-shadow-md select-none">
-                      🍵
-                    </span>
-                    <div className="flex flex-col items-center">
+                  {/* Illustrated Kerala Chaya Glass (Liquid level reflects sips remaining) */}
+                  <div className="flex items-end justify-center gap-6 my-2">
+                    <KeralaChayaGlass
+                      fillPercent={(sipsRemaining / 4) * 100}
+                      teaColor={getTeaLiquorColor()}
+                      size="lg"
+                    />
+
+                    {/* Kerala Nilavilakku Brass Lamp */}
+                    <div className="flex flex-col items-center pb-3">
                       <motion.span 
                         animate={{ scale: [1, 1.15, 0.95, 1], opacity: [0.9, 1, 0.85, 0.9] }}
                         transition={{ repeat: Infinity, duration: 1.4 }}
-                        className="text-3xl select-none"
+                        className="text-3xl select-none filter drop-shadow"
                       >
                         🪔
                       </motion.span>
-                      <span className="font-pixel text-[6px] text-amber-900 mt-0.5">NILAVILAKKU</span>
+                      <span className="font-pixel text-[7px] text-amber-900 mt-1 font-bold">NILAVILAKKU</span>
+                      <span className="text-[9px] text-stone-500 font-mono">നിലവിളക്ക്</span>
                     </div>
                   </div>
 
+                  {/* Heart Warmth Level Meter */}
                   <div className="flex items-center gap-1.5 mt-2">
                     {[1, 2, 3, 4].map((i) => (
                       <Heart 
                         key={i} 
-                        className={`w-4 h-4 ${i <= sipsRemaining ? 'text-red-500 fill-red-500 animate-pulse' : 'text-stone-300'}`} 
+                        className={`w-4 h-4 ${i <= (4 - sipsRemaining + 1) ? 'text-red-500 fill-red-500 animate-pulse' : 'text-stone-300'}`} 
                       />
                     ))}
                   </div>
 
                   <p className="font-pixel text-[9px] text-stone-700 mt-2">
-                    {sipsRemaining > 0 ? `${sipsRemaining} SIPS REMAINING` : 'CUP FINISHED • HEART WARMED'}
+                    {sipsRemaining > 0 ? `${sipsRemaining} SIPS REMAINING IN GLASS` : 'GLASS EMPTIED • HEART WARMED ✨'}
                   </p>
 
                   <button
@@ -1060,7 +1190,7 @@ export function MonsoonChaiGame() {
                         : 'bg-stone-200 text-stone-400 cursor-default shadow-none border-stone-300'
                     }`}
                   >
-                    {sipsRemaining > 0 ? 'TAKE A SIP ☕' : 'EMPTY CUP ✨'}
+                    {sipsRemaining > 0 ? 'TAKE A WARM SIP ☕' : 'EMPTY GLASS ✨'}
                   </button>
                 </div>
 

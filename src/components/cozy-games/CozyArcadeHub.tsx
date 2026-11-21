@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Clock, Play } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { MonsoonChaiGame } from './MonsoonChaiGame';
 import { DeskTerrariumGame } from './DeskTerrariumGame';
 import { BentoKeepsakesGame } from './BentoKeepsakesGame';
+import { TravelersSketchbookGame } from './TravelersSketchbookGame';
 
 export type CozyGameId = 'monsoon-chai' | 'desk-terrarium' | 'bento-keepsakes' | 'travelers-sketchbook';
 
@@ -50,16 +51,14 @@ const COZY_GAMES: CozyGameDef[] = [
     title: "Traveler's Sketchbook",
     subtitle: 'Vintage Stamps • Postcard Studio',
     icon: '📖',
-    status: 'UP NEXT',
+    status: 'PLAYABLE',
     themeColor: '#7C3AED',
     description: 'Dip carved wooden stamps in matcha and terracotta inks, arrange stationery on cream pages, and export your cozy postcard.'
   }
 ];
 
 export function CozyArcadeHub() {
-  const [selectedGameId, setSelectedGameId] = useState<CozyGameId>('bento-keepsakes');
-
-  const activeGame = COZY_GAMES.find(g => g.id === selectedGameId) || COZY_GAMES[0];
+  const [selectedGameId, setSelectedGameId] = useState<CozyGameId>('travelers-sketchbook');
 
   return (
     <section id="cozy-arcade" className="py-20 px-4 sm:px-6 relative z-10">
@@ -91,7 +90,7 @@ export function CozyArcadeHub() {
 
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-xs font-mono font-bold self-start sm:self-auto shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>3 OF 4 GAMES PLAYABLE NOW</span>
+            <span>ALL 4 GAMES PLAYABLE NOW</span>
           </div>
         </motion.div>
 
@@ -150,40 +149,7 @@ export function CozyArcadeHub() {
           ) : selectedGameId === 'bento-keepsakes' ? (
             <BentoKeepsakesGame />
           ) : (
-            /* Preview / Queued Card for Game 6 (Traveler's Sketchbook) */
-            <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] bg-white p-8 sm:p-12 text-center">
-              <div className="w-20 h-20 rounded-3xl bg-purple-50 border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] flex items-center justify-center text-4xl mx-auto mb-4">
-                {activeGame.icon}
-              </div>
-
-              <span className="font-pixel text-[9px] px-3 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-900 inline-block mb-3">
-                {activeGame.status === 'UP NEXT' ? 'NEXT TO IMPLEMENT' : 'QUEUED COZY GAME'}
-              </span>
-
-              <h3 className="font-display font-black text-2xl sm:text-3xl text-stone-800 mb-2">
-                {activeGame.title}
-              </h3>
-              <p className="text-sm text-stone-600 max-w-md mx-auto mb-6">
-                {activeGame.description}
-              </p>
-
-              <div className="inline-flex items-center gap-2 p-3 rounded-2xl bg-purple-50 border-2 border-purple-200 text-xs font-mono font-bold text-purple-900 max-w-md text-left">
-                <Clock className="w-4 h-4 flex-shrink-0 text-purple-700" />
-                <span>
-                  Games 1, 2 & 3 are playable now! Traveler's Sketchbook will unlock upon your approval.
-                </span>
-              </div>
-
-              <div className="mt-6">
-                <button
-                  onClick={() => setSelectedGameId('bento-keepsakes')}
-                  className="py-2.5 px-5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white font-pixel text-xs border-2 border-[#1E232B] shadow-[3px_3px_0px_#1E232B] cursor-pointer inline-flex items-center gap-2"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>PLAY BENTO & KEEPSAKES NOW</span>
-                </button>
-              </div>
-            </div>
+            <TravelersSketchbookGame />
           )}
         </div>
       </div>

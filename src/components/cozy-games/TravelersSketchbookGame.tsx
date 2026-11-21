@@ -377,15 +377,17 @@ export function TravelersSketchbookGame() {
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!postcardRef.current) return;
     const rect = postcardRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    const pctX = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const pctY = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    const normX = Math.max(0, Math.min(1000, ((e.clientX - rect.left) / rect.width) * 1000));
+    const normY = Math.max(0, Math.min(675, ((e.clientY - rect.top) / rect.height) * 675));
 
     if (toolMode === 'pencil') {
       isDrawingRef.current = true;
       sketchbookAudio.playPencilScratch();
       const newStroke: DrawingStroke = {
         id: `stroke-${Date.now()}-${Math.random()}`,
-        points: [{ x, y }],
+        points: [{ x: normX, y: normY }],
         color: activeInk.hex,
         width: pencilWidth
       };
@@ -393,18 +395,18 @@ export function TravelersSketchbookGame() {
     } else if (toolMode === 'eraser') {
       // Erase any stroke near the click point
       setStrokes(prev => prev.filter(stroke => {
-        const isNear = stroke.points.some(p => Math.hypot(p.x - x, p.y - y) < 4);
+        const isNear = stroke.points.some(p => Math.hypot(p.x - normX, p.y - normY) < 35);
         return !isNear;
       }));
       sketchbookAudio.playPaperRustle();
     } else {
-      // Stamp Mode: Place stamp
+      // Stamp Mode: Place stamp centered exactly where clicked
       sketchbookAudio.playStamp();
       const newStamp: PlacedStamp = {
         id: `stamp-${Date.now()}-${Math.random()}`,
         stampId: selectedStampId,
-        x: Math.round(x * 10) / 10,
-        y: Math.round(y * 10) / 10,
+        x: Math.round(pctX * 10) / 10,
+        y: Math.round(pctY * 10) / 10,
         color: activeInk.hex,
         rotation: stampAngle,
         scale: stampScale
@@ -419,15 +421,15 @@ export function TravelersSketchbookGame() {
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!postcardRef.current) return;
     const rect = postcardRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    const normX = Math.max(0, Math.min(1000, ((e.clientX - rect.left) / rect.width) * 1000));
+    const normY = Math.max(0, Math.min(675, ((e.clientY - rect.top) / rect.height) * 675));
 
     setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 
     if (toolMode === 'pencil' && isDrawingRef.current && currentStroke) {
       setCurrentStroke(prev => prev ? {
         ...prev,
-        points: [...prev.points, { x, y }]
+        points: [...prev.points, { x: normX, y: normY }]
       } : null);
 
       const now = Date.now();
@@ -437,7 +439,7 @@ export function TravelersSketchbookGame() {
       }
     } else if (toolMode === 'eraser' && isDrawingRef.current) {
       setStrokes(prev => prev.filter(stroke => {
-        const isNear = stroke.points.some(p => Math.hypot(p.x - x, p.y - y) < 4);
+        const isNear = stroke.points.some(p => Math.hypot(p.x - normX, p.y - normY) < 35);
         return !isNear;
       }));
     }
@@ -956,7 +958,7 @@ export function TravelersSketchbookGame() {
               handlePointerUp();
               setMousePos(null);
             }}
-            className={`w-full aspect-[4/2.7] rounded-2xl border-4 border-[#1E232B] shadow-[8px_12px_0px_#1E232B] p-4 sm:p-6 relative select-none overflow-hidden transition-colors duration-300 ${paperTheme.bg} ${paperTheme.text} ${
+            className={`w-full aspect-[4/2.7] rounded-2xl border-4 border-[#1E232B] shadow-[8px_12px_0px_#1E232B] p-4 sm:p-6 relative select-none touch-none overflow-hidden transition-colors duration-300 ${paperTheme.bg} ${paperTheme.text} ${
               toolMode === 'pencil' ? 'cursor-crosshair' : toolMode === 'eraser' ? 'cursor-cell' : 'cursor-crosshair'
             }`}
           >
@@ -1017,8 +1019,8 @@ export function TravelersSketchbookGame() {
               </div>
             </div>
 
-            {/* Render Freehand Pencil Drawing Strokes as Smooth SVG Paths */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-15">
+            {/* Render Freehand Pencil Drawing Strokes as Smooth SVG Paths (ViewBox 1000x675 for 100% precision) */}
+            <svg viewBox="0 0 1000 675" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none z-15">
               {strokes.map((stroke) => (
                 <path
                   key={stroke.id}
@@ -1027,6 +1029,7 @@ export function TravelersSketchbookGame() {
                   strokeWidth={stroke.width}
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
                   fill="none"
                   opacity={0.88}
                 />
@@ -1038,13 +1041,14 @@ export function TravelersSketchbookGame() {
                   strokeWidth={currentStroke.width}
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
                   fill="none"
                   opacity={0.88}
                 />
               )}
             </svg>
 
-            {/* Render All Stamped Marks on Canvas with PROPER Framer Motion Rotation */}
+            {/* Render All Stamped Marks on Canvas Centered with Motion Bindings */}
             <div className="absolute inset-0 pointer-events-none z-10">
               {placedStamps.map((stamp) => {
                 const def = STAMPS.find(s => s.id === stamp.stampId);
@@ -1054,14 +1058,14 @@ export function TravelersSketchbookGame() {
                 return (
                   <motion.div
                     key={stamp.id}
-                    initial={{ scale: 0.5, rotate: stamp.rotation, opacity: 0 }}
-                    animate={{ scale: stamp.scale, rotate: stamp.rotation, opacity: 0.95 }}
+                    initial={{ x: '-50%', y: '-50%', scale: 0.5, rotate: stamp.rotation, opacity: 0 }}
+                    animate={{ x: '-50%', y: '-50%', scale: stamp.scale, rotate: stamp.rotation, opacity: 0.95 }}
                     transition={{ type: "spring", stiffness: 500, damping: 25 }}
                     style={{
                       left: `${stamp.x}%`,
                       top: `${stamp.y}%`,
                     }}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 pointer-events-auto cursor-pointer group ${
+                    className={`absolute w-14 h-14 sm:w-16 sm:h-16 pointer-events-auto cursor-pointer group ${
                       isSelected ? 'ring-2 ring-purple-600 ring-offset-2 rounded-2xl' : ''
                     }`}
                     title="Click to select &amp; rotate"
@@ -1126,6 +1130,35 @@ export function TravelersSketchbookGame() {
               >
                 {activeStamp.renderSvg(activeInk.hex)}
               </div>
+            )}
+
+            {/* Precision Cursor Indicator for Pencil Mode */}
+            {toolMode === 'pencil' && mousePos && (
+              <div
+                style={{
+                  left: mousePos.x,
+                  top: mousePos.y,
+                  width: `${Math.max(6, pencilWidth * 2)}px`,
+                  height: `${Math.max(6, pencilWidth * 2)}px`,
+                  backgroundColor: activeInk.hex,
+                  transform: 'translate(-50%, -50%)'
+                }}
+                className="absolute rounded-full pointer-events-none border border-black/60 z-25 shadow-xs"
+              />
+            )}
+
+            {/* Precision Cursor Indicator for Eraser Mode */}
+            {toolMode === 'eraser' && mousePos && (
+              <div
+                style={{
+                  left: mousePos.x,
+                  top: mousePos.y,
+                  width: '32px',
+                  height: '32px',
+                  transform: 'translate(-50%, -50%)'
+                }}
+                className="absolute rounded-full pointer-events-none border-2 border-dashed border-rose-500 bg-rose-500/25 z-25"
+              />
             )}
           </div>
 

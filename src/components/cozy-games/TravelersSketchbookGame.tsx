@@ -1,13 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Download, 
   RotateCcw, 
+  RotateCw, 
   Undo2, 
   Sparkles, 
   Type, 
   Palette, 
-  Check
+  Check,
+  Pencil,
+  Stamp,
+  Eraser
 } from 'lucide-react';
 import { sketchbookAudio } from './sketchbookAudio';
 
@@ -17,7 +21,6 @@ interface StampDef {
   name: string;
   icon: string;
   category: 'nature' | 'heritage' | 'cozy';
-  svgPath?: string;
   renderSvg: (color: string) => React.ReactNode;
 }
 
@@ -31,6 +34,21 @@ interface PlacedStamp {
   rotation: number;
   scale: number;
 }
+
+// Freehand Drawing Stroke
+interface DrawingStroke {
+  id: string;
+  points: { x: number; y: number }[]; // coordinates as percentage (0 - 100)
+  color: string;
+  width: number;
+}
+
+// Action History for Unified Undo
+type HistoryAction = 
+  | { type: 'stamp'; id: string }
+  | { type: 'stroke'; id: string };
+
+type ToolMode = 'stamp' | 'pencil' | 'eraser';
 
 // Ink Color Definition
 interface InkDef {
@@ -74,20 +92,16 @@ const STAMPS: StampDef[] = [
     category: 'nature',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Curved trunk */}
         <path d="M 28 58 Q 32 38 34 22" />
         <path d="M 32 58 Q 35 40 37 22" />
-        {/* Palm fronds */}
         <path d="M 34 22 Q 22 18 12 26" />
         <path d="M 34 22 Q 26 10 18 8" />
         <path d="M 34 22 Q 36 8 46 10" />
         <path d="M 34 22 Q 46 16 52 24" />
         <path d="M 34 22 Q 40 30 48 38" />
         <path d="M 34 22 Q 24 28 16 36" />
-        {/* Coconuts */}
         <circle cx="32" cy="23" r="2.5" fill={color} />
         <circle cx="36" cy="24" r="2.5" fill={color} />
-        {/* Ground grass */}
         <path d="M 22 58 Q 28 56 38 58" />
       </svg>
     )
@@ -99,18 +113,14 @@ const STAMPS: StampDef[] = [
     category: 'heritage',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Train boiler & cabin */}
         <rect x="14" y="26" width="36" height="18" rx="3" />
         <rect x="36" y="16" width="14" height="18" rx="2" />
         <rect x="40" y="20" width="6" height="6" fill={color} fillOpacity="0.2" />
-        {/* Chimney & cowcatcher */}
         <path d="M 20 26 L 18 16 L 24 16 L 22 26" />
         <path d="M 14 42 L 8 46 L 14 46" fill={color} fillOpacity="0.3" />
-        {/* Wheels */}
         <circle cx="20" cy="46" r="5" />
         <circle cx="32" cy="46" r="5" />
         <circle cx="44" cy="46" r="5" />
-        {/* Steam puffs */}
         <circle cx="16" cy="12" r="2" strokeDasharray="2 2" />
         <circle cx="12" cy="8" r="3" strokeDasharray="2 2" />
         <circle cx="8" cy="4" r="3.5" strokeDasharray="2 2" />
@@ -124,15 +134,12 @@ const STAMPS: StampDef[] = [
     category: 'cozy',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Fluted tea glass */}
         <path d="M 20 18 L 24 50 L 40 50 L 44 18 Z" />
         <line x1="22" y1="24" x2="42" y2="24" strokeDasharray="2 1" />
         <line x1="28" y1="24" x2="29" y2="48" />
         <line x1="32" y1="24" x2="32" y2="48" />
         <line x1="36" y1="24" x2="35" y2="48" />
-        {/* Saucer / Plate */}
         <path d="M 16 54 Q 32 58 48 54" />
-        {/* Tea steam */}
         <path d="M 28 14 Q 30 10 27 6" />
         <path d="M 33 14 Q 36 10 33 6" />
         <path d="M 38 14 Q 40 10 38 6" />
@@ -146,15 +153,11 @@ const STAMPS: StampDef[] = [
     category: 'nature',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Back ridge */}
         <path d="M 6 48 L 22 22 L 38 48" />
         <path d="M 22 22 L 20 30 L 26 34" strokeDasharray="2 2" />
-        {/* Fore ridge */}
         <path d="M 26 48 L 42 16 L 58 48" />
         <path d="M 42 16 L 39 26 L 47 30" strokeDasharray="2 2" />
-        {/* Rising sun / moon */}
         <circle cx="16" cy="18" r="4" fill={color} fillOpacity="0.25" />
-        {/* Pine trees at base */}
         <path d="M 10 48 L 12 44 L 14 48" />
         <path d="M 50 48 L 52 44 L 54 48" />
       </svg>
@@ -167,15 +170,12 @@ const STAMPS: StampDef[] = [
     category: 'heritage',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        {/* Outer and inner circles */}
         <circle cx="32" cy="32" r="22" strokeWidth="2.5" />
         <circle cx="32" cy="32" r="18" strokeDasharray="2 2" />
-        {/* 4 Points */}
         <polygon points="32,14 35,29 32,32 29,29" fill={color} />
         <polygon points="32,50 35,35 32,32 29,35" fill="none" stroke={color} />
         <polygon points="50,32 35,35 32,32 35,29" fill="none" stroke={color} />
         <polygon points="14,32 29,35 32,32 29,29" fill="none" stroke={color} />
-        {/* Cardinal Letters */}
         <text x="32" y="11" textAnchor="middle" fill={color} fontSize="7" fontWeight="bold" fontFamily="monospace">N</text>
         <circle cx="32" cy="32" r="2" fill={color} />
       </svg>
@@ -188,14 +188,10 @@ const STAMPS: StampDef[] = [
     category: 'heritage',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Traditional canoe hull */}
         <path d="M 8 38 Q 32 46 56 38 Q 48 48 16 48 Z" fill={color} fillOpacity="0.2" />
-        {/* Thatch canopy */}
         <path d="M 20 38 Q 32 24 44 38" />
         <path d="M 24 38 Q 32 28 40 38" strokeDasharray="2 1" />
-        {/* Oar / Pole */}
         <line x1="16" y1="28" x2="10" y2="52" strokeWidth="2" />
-        {/* Ripple waves */}
         <path d="M 4 52 Q 12 50 20 52 Q 28 54 36 52 Q 44 50 52 52 Q 58 54 62 52" strokeWidth="1.5" />
       </svg>
     )
@@ -207,13 +203,10 @@ const STAMPS: StampDef[] = [
     category: 'heritage',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        {/* Circular cancel stamp */}
         <circle cx="32" cy="32" r="24" strokeWidth="2.5" />
         <circle cx="32" cy="32" r="20" strokeDasharray="3 2" />
-        {/* Wavy cancellation bars */}
         <path d="M 12 28 Q 22 24 32 28 Q 42 32 52 28" />
         <path d="M 12 36 Q 22 32 32 36 Q 42 40 52 36" />
-        {/* Text */}
         <text x="32" y="20" textAnchor="middle" fill={color} fontSize="6" fontWeight="bold" fontFamily="monospace">POSTE KERALA</text>
         <text x="32" y="46" textAnchor="middle" fill={color} fontSize="6.5" fontWeight="black" fontFamily="monospace">NOV 1984</text>
       </svg>
@@ -226,13 +219,11 @@ const STAMPS: StampDef[] = [
     category: 'nature',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* 5 Petals */}
         <ellipse cx="32" cy="20" rx="6" ry="10" />
         <ellipse cx="43" cy="28" rx="10" ry="6" transform="rotate(35 43 28)" />
         <ellipse cx="39" cy="42" rx="6" ry="10" transform="rotate(70 39 42)" />
         <ellipse cx="25" cy="42" rx="6" ry="10" transform="rotate(-70 25 42)" />
         <ellipse cx="21" cy="28" rx="10" ry="6" transform="rotate(-35 21 28)" />
-        {/* Center pistil */}
         <circle cx="32" cy="32" r="4" fill={color} />
       </svg>
     )
@@ -244,15 +235,11 @@ const STAMPS: StampDef[] = [
     category: 'cozy',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Top hanger and ring */}
         <circle cx="32" cy="12" r="3" />
         <line x1="32" y1="15" x2="32" y2="20" />
         <path d="M 22 20 L 42 20" strokeWidth="3" />
-        {/* Oval glass body */}
         <path d="M 24 20 Q 18 34 24 48 L 40 48 Q 46 34 40 20 Z" />
-        {/* Inner flame */}
         <path d="M 32 42 Q 28 36 32 30 Q 36 36 32 42" fill={color} fillOpacity="0.4" />
-        {/* Base */}
         <path d="M 20 48 L 44 48" strokeWidth="3" />
         <path d="M 24 52 L 40 52" />
       </svg>
@@ -265,15 +252,11 @@ const STAMPS: StampDef[] = [
     category: 'nature',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Perched branch */}
         <path d="M 12 52 Q 32 48 54 52" />
-        {/* Body and long beak */}
         <ellipse cx="34" cy="34" rx="8" ry="12" transform="rotate(15 34 34)" />
         <circle cx="36" cy="20" r="6" />
         <path d="M 42 20 L 56 22 L 42 24" fill={color} />
-        {/* Tail */}
         <path d="M 28 44 L 22 56 L 26 56 L 31 44" fill={color} fillOpacity="0.3" />
-        {/* Eye */}
         <circle cx="38" cy="19" r="1.5" fill={color} />
       </svg>
     )
@@ -285,13 +268,9 @@ const STAMPS: StampDef[] = [
     category: 'heritage',
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Back, head and trunk */}
         <path d="M 16 46 L 16 34 Q 18 20 34 20 Q 42 20 46 26 Q 52 32 50 42 Q 49 46 45 44" />
-        {/* Tusk */}
         <path d="M 44 38 Q 48 38 46 34" strokeWidth="2" />
-        {/* Ears */}
         <path d="M 38 24 Q 30 26 32 38 Q 36 40 38 34" fill={color} fillOpacity="0.2" />
-        {/* Legs */}
         <line x1="22" y1="42" x2="22" y2="52" strokeWidth="3" />
         <line x1="28" y1="42" x2="28" y2="52" strokeWidth="3" />
         <line x1="38" y1="42" x2="38" y2="52" strokeWidth="3" />
@@ -307,7 +286,6 @@ const STAMPS: StampDef[] = [
     renderSvg: (color) => (
       <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="32" cy="32" r="10" strokeWidth="2.5" fill={color} fillOpacity="0.15" />
-        {/* Radiant rays */}
         <line x1="32" y1="12" x2="32" y2="18" strokeWidth="2.5" />
         <line x1="32" y1="46" x2="32" y2="52" strokeWidth="2.5" />
         <line x1="12" y1="32" x2="18" y2="32" strokeWidth="2.5" />
@@ -321,15 +299,46 @@ const STAMPS: StampDef[] = [
   }
 ];
 
+// Helper: Convert array of percentage points to smooth SVG path
+function pointsToSvgPath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return '';
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y} L ${points[0].x + 0.1} ${points[0].y + 0.1}`;
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const midX = (prev.x + curr.x) / 2;
+    const midY = (prev.y + curr.y) / 2;
+    path += ` Q ${prev.x} ${prev.y}, ${midX} ${midY}`;
+  }
+  path += ` L ${points[points.length - 1].x} ${points[points.length - 1].y}`;
+  return path;
+}
+
 export function TravelersSketchbookGame() {
+  const [toolMode, setToolMode] = useState<ToolMode>('stamp');
   const [selectedStampId, setSelectedStampId] = useState<string>('palm');
   const [activeInk, setActiveInk] = useState<InkDef>(INK_PALETTE[0]);
   const [paperTheme, setPaperTheme] = useState(PAPER_THEMES[0]);
+  const [pencilWidth, setPencilWidth] = useState<number>(2.5);
+
+  // Placed Stamps & Drawings
   const [placedStamps, setPlacedStamps] = useState<PlacedStamp[]>([
     { id: 'initial-1', stampId: 'airmail', x: 82, y: 18, color: '#C2410C', rotation: -5, scale: 0.9 },
-    { id: 'initial-2', stampId: 'palm', x: 25, y: 48, color: '#15803D', rotation: 2, scale: 1.1 },
-    { id: 'initial-3', stampId: 'chaya', x: 45, y: 62, color: '#78350F', rotation: -3, scale: 0.95 }
+    { id: 'initial-2', stampId: 'palm', x: 25, y: 48, color: '#15803D', rotation: 0, scale: 1.1 },
+    { id: 'initial-3', stampId: 'chaya', x: 45, y: 62, color: '#78350F', rotation: 0, scale: 0.95 }
   ]);
+  const [selectedPlacedStampId, setSelectedPlacedStampId] = useState<string | null>(null);
+
+  // Freehand Drawing Strokes
+  const [strokes, setStrokes] = useState<DrawingStroke[]>([]);
+  const [currentStroke, setCurrentStroke] = useState<DrawingStroke | null>(null);
+  const [history, setHistory] = useState<HistoryAction[]>([
+    { type: 'stamp', id: 'initial-1' },
+    { type: 'stamp', id: 'initial-2' },
+    { type: 'stamp', id: 'initial-3' },
+  ]);
+
   const [hasWashiTape, setHasWashiTape] = useState(true);
   const [travelerNote, setTravelerNote] = useState<string>(PRESET_QUOTES[0]);
   const [customNoteInput, setCustomNoteInput] = useState<string>('');
@@ -340,62 +349,171 @@ export function TravelersSketchbookGame() {
   const [exportNotice, setExportNotice] = useState(false);
 
   const postcardRef = useRef<HTMLDivElement>(null);
+  const isDrawingRef = useRef(false);
+  const lastScratchTime = useRef<number>(0);
 
   const activeStamp = STAMPS.find(s => s.id === selectedStampId) || STAMPS[0];
 
-  // Handle stamping onto the paper canvas
-  const handlePostcardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  // Keyboard shortcut 'R' to rotate active stamp or selected placed stamp
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'r' || e.key === 'R') {
+        sketchbookAudio.playInkDab();
+        if (selectedPlacedStampId) {
+          setPlacedStamps(prev =>
+            prev.map(s => s.id === selectedPlacedStampId ? { ...s, rotation: (s.rotation + 45) % 360 } : s)
+          );
+        } else {
+          setStampAngle(prev => (prev + 45) % 360);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPlacedStampId]);
+
+  // Pointer Down on Postcard
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!postcardRef.current) return;
     const rect = postcardRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
 
-    // Slight handcrafted human tilt variation (+/- 4 degrees)
-    const naturalWobble = (Math.random() - 0.5) * 8;
-    const finalAngle = stampAngle + naturalWobble;
+    if (toolMode === 'pencil') {
+      isDrawingRef.current = true;
+      sketchbookAudio.playPencilScratch();
+      const newStroke: DrawingStroke = {
+        id: `stroke-${Date.now()}-${Math.random()}`,
+        points: [{ x, y }],
+        color: activeInk.hex,
+        width: pencilWidth
+      };
+      setCurrentStroke(newStroke);
+    } else if (toolMode === 'eraser') {
+      // Erase any stroke near the click point
+      setStrokes(prev => prev.filter(stroke => {
+        const isNear = stroke.points.some(p => Math.hypot(p.x - x, p.y - y) < 4);
+        return !isNear;
+      }));
+      sketchbookAudio.playPaperRustle();
+    } else {
+      // Stamp Mode: Place stamp
+      sketchbookAudio.playStamp();
+      const newStamp: PlacedStamp = {
+        id: `stamp-${Date.now()}-${Math.random()}`,
+        stampId: selectedStampId,
+        x: Math.round(x * 10) / 10,
+        y: Math.round(y * 10) / 10,
+        color: activeInk.hex,
+        rotation: stampAngle,
+        scale: stampScale
+      };
+      setPlacedStamps(prev => [...prev, newStamp]);
+      setHistory(prev => [...prev, { type: 'stamp', id: newStamp.id }]);
+      setSelectedPlacedStampId(newStamp.id);
+    }
+  };
 
-    sketchbookAudio.playStamp();
+  // Pointer Move on Postcard
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!postcardRef.current) return;
+    const rect = postcardRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
 
-    const newStamp: PlacedStamp = {
-      id: `stamp-${Date.now()}-${Math.random()}`,
-      stampId: selectedStampId,
-      x: Math.round(x * 10) / 10,
-      y: Math.round(y * 10) / 10,
-      color: activeInk.hex,
-      rotation: finalAngle,
-      scale: stampScale
-    };
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 
-    setPlacedStamps(prev => [...prev, newStamp]);
+    if (toolMode === 'pencil' && isDrawingRef.current && currentStroke) {
+      setCurrentStroke(prev => prev ? {
+        ...prev,
+        points: [...prev.points, { x, y }]
+      } : null);
+
+      const now = Date.now();
+      if (now - lastScratchTime.current > 90) {
+        sketchbookAudio.playPencilScratch();
+        lastScratchTime.current = now;
+      }
+    } else if (toolMode === 'eraser' && isDrawingRef.current) {
+      setStrokes(prev => prev.filter(stroke => {
+        const isNear = stroke.points.some(p => Math.hypot(p.x - x, p.y - y) < 4);
+        return !isNear;
+      }));
+    }
+  };
+
+  // Pointer Up on Postcard
+  const handlePointerUp = () => {
+    if (toolMode === 'pencil' && currentStroke && currentStroke.points.length > 0) {
+      setStrokes(prev => [...prev, currentStroke]);
+      setHistory(prev => [...prev, { type: 'stroke', id: currentStroke.id }]);
+      setCurrentStroke(null);
+    }
+    isDrawingRef.current = false;
   };
 
   // Remove a specific placed stamp
-  const handleRemoveStamp = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleRemoveStamp = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     sketchbookAudio.playPaperRustle();
     setPlacedStamps(prev => prev.filter(s => s.id !== id));
+    setHistory(prev => prev.filter(h => !(h.type === 'stamp' && h.id === id)));
+    if (selectedPlacedStampId === id) setSelectedPlacedStampId(null);
   };
 
-  // Undo last stamp
+  // Rotate a specific stamp
+  const handleRotatePlacedStamp = (id: string, deltaAngle: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    sketchbookAudio.playInkDab();
+    setPlacedStamps(prev =>
+      prev.map(s => s.id === id ? { ...s, rotation: (s.rotation + deltaAngle + 360) % 360 } : s)
+    );
+  };
+
+  // Unified Undo (pops either the last stamp or the last pencil stroke)
   const handleUndo = () => {
-    if (placedStamps.length === 0) return;
+    if (history.length === 0) return;
     sketchbookAudio.playPaperRustle();
-    setPlacedStamps(prev => prev.slice(0, -1));
+    const lastAction = history[history.length - 1];
+    setHistory(prev => prev.slice(0, -1));
+
+    if (lastAction.type === 'stamp') {
+      setPlacedStamps(prev => prev.filter(s => s.id !== lastAction.id));
+      if (selectedPlacedStampId === lastAction.id) setSelectedPlacedStampId(null);
+    } else if (lastAction.type === 'stroke') {
+      setStrokes(prev => prev.filter(s => s.id !== lastAction.id));
+    }
   };
 
-  // Clear all stamps
+  // Clear all stamps and pencil strokes
   const handleClear = () => {
     sketchbookAudio.playPaperRustle();
     setPlacedStamps([]);
+    setStrokes([]);
+    setCurrentStroke(null);
+    setHistory([]);
+    setSelectedPlacedStampId(null);
   };
 
-  // Export Postcard as Canvas Download
+  // Set rotation angle (applies to selected stamp if one is selected, or sets default for next stamp)
+  const handleSetAngle = (angle: number) => {
+    sketchbookAudio.playInkDab();
+    const normalized = (angle % 360 + 360) % 360;
+    setStampAngle(normalized);
+    if (selectedPlacedStampId) {
+      setPlacedStamps(prev =>
+        prev.map(s => s.id === selectedPlacedStampId ? { ...s, rotation: normalized } : s)
+      );
+    }
+  };
+
+  // Export Postcard as Canvas Download (includes stamps, pencil drawings, text, borders)
   const handleExportPostcard = () => {
     sketchbookAudio.playExportChime();
     setExportNotice(true);
     setTimeout(() => setExportNotice(false), 3500);
 
-    // Create high-resolution export canvas (1200 x 800)
     const canvas = document.createElement('canvas');
     canvas.width = 1200;
     canvas.height = 760;
@@ -451,6 +569,29 @@ export function TravelersSketchbookGame() {
     ctx.fillStyle = paperTheme.id === 'midnight' ? '#818CF8' : '#B45309';
     ctx.fillText('KERALA VERANDAH POSTCARD • WORLD 1-4.5', 60, canvas.height - 50);
 
+    // 7. Render Freehand Pencil Strokes onto Canvas
+    const allStrokes = currentStroke ? [...strokes, currentStroke] : strokes;
+    const scaleX = canvas.width / 100;
+    const scaleY = canvas.height / 100;
+
+    allStrokes.forEach(stroke => {
+      if (stroke.points.length < 2) return;
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width * 2.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(stroke.points[0].x * scaleX, stroke.points[0].y * scaleY);
+      for (let i = 1; i < stroke.points.length; i++) {
+        const prev = stroke.points[i - 1];
+        const curr = stroke.points[i];
+        const midX = ((prev.x + curr.x) / 2) * scaleX;
+        const midY = ((prev.y + curr.y) / 2) * scaleY;
+        ctx.quadraticCurveTo(prev.x * scaleX, prev.y * scaleY, midX, midY);
+      }
+      ctx.stroke();
+    });
+
     // Trigger download
     const link = document.createElement('a');
     link.download = `kerala-travel-postcard-${Date.now()}.png`;
@@ -460,7 +601,7 @@ export function TravelersSketchbookGame() {
 
   return (
     <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#1E232B] shadow-[8px_12px_0px_#1E232B] bg-[#FFFBEB] select-none">
-      {/* 1. Header with Controls & Export Button */}
+      {/* 1. Header with Mode Switcher & Export Button */}
       <div className="bg-[#1C1917] text-white px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 border-b-4 border-[#1E232B] relative z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-700 border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] flex items-center justify-center text-xl shadow-inner">
@@ -471,11 +612,51 @@ export function TravelersSketchbookGame() {
               <span className="font-pixel text-[11px] text-purple-300 tracking-wider">TRAVELER'S SKETCHBOOK</span>
               <span className="text-[10px] text-stone-400 font-mono font-bold">• POSTCARD STUDIO</span>
             </div>
-            <p className="text-[11px] text-stone-300 font-medium">Vintage Stamp & Postcard Studio • Game 6</p>
+            <p className="text-[11px] text-stone-300 font-medium">Vintage Stamp &amp; Pencil Drawing • Game 6</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Main Tool Switcher: STAMP vs PENCIL vs ERASER */}
+          <div className="flex items-center bg-stone-900 border-2 border-[#1E232B] rounded-full p-0.5">
+            <button
+              onClick={() => {
+                sketchbookAudio.playInkDab();
+                setToolMode('stamp');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+                toolMode === 'stamp' ? 'bg-[#7C3AED] text-white shadow-xs' : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              <Stamp className="w-3.5 h-3.5" />
+              <span>STAMP</span>
+            </button>
+            <button
+              onClick={() => {
+                sketchbookAudio.playPencilScratch();
+                setToolMode('pencil');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+                toolMode === 'pencil' ? 'bg-[#D97706] text-white shadow-xs' : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>PENCIL DRAW</span>
+            </button>
+            <button
+              onClick={() => {
+                sketchbookAudio.playPaperRustle();
+                setToolMode('eraser');
+              }}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all cursor-pointer ${
+                toolMode === 'eraser' ? 'bg-rose-600 text-white shadow-xs' : 'text-stone-400 hover:text-white'
+              }`}
+              title="Eraser tool"
+            >
+              <Eraser className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           {/* Paper Theme Picker */}
           <div className="hidden sm:flex items-center bg-stone-900 border-2 border-[#1E232B] rounded-full p-0.5">
             {PAPER_THEMES.map((theme) => (
@@ -485,7 +666,7 @@ export function TravelersSketchbookGame() {
                   sketchbookAudio.playPaperRustle();
                   setPaperTheme(theme);
                 }}
-                className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold transition-all cursor-pointer ${
                   paperTheme.id === theme.id ? 'bg-purple-600 text-white' : 'text-stone-400 hover:text-white'
                 }`}
               >
@@ -494,12 +675,12 @@ export function TravelersSketchbookGame() {
             ))}
           </div>
 
-          {/* Undo Button */}
+          {/* Unified Undo Button */}
           <button
             onClick={handleUndo}
-            disabled={placedStamps.length === 0}
-            className="p-1.5 rounded-full bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 border-2 border-[#1E232B] cursor-pointer"
-            title="Undo Last Stamp"
+            disabled={history.length === 0}
+            className="p-1.5 rounded-full bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 border-2 border-[#1E232B] cursor-pointer active:translate-y-0.5"
+            title="Undo Last Action"
           >
             <Undo2 className="w-4 h-4" />
           </button>
@@ -507,9 +688,9 @@ export function TravelersSketchbookGame() {
           {/* Clear Canvas */}
           <button
             onClick={handleClear}
-            disabled={placedStamps.length === 0}
-            className="p-1.5 rounded-full bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 border-2 border-[#1E232B] cursor-pointer"
-            title="Clear Postcard"
+            disabled={placedStamps.length === 0 && strokes.length === 0}
+            className="p-1.5 rounded-full bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 border-2 border-[#1E232B] cursor-pointer active:translate-y-0.5"
+            title="Clear All Stamps & Drawings"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -518,7 +699,7 @@ export function TravelersSketchbookGame() {
           <button
             onClick={handleExportPostcard}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-pixel text-[10px] border-2 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] active:translate-y-0.5 cursor-pointer"
-            title="Save and download this postcard"
+            title="Save and download postcard as high-res PNG"
           >
             <Download className="w-3.5 h-3.5" />
             <span>EXPORT PNG</span>
@@ -526,13 +707,13 @@ export function TravelersSketchbookGame() {
         </div>
       </div>
 
-      {/* 2. Top Toolbar: Ink Pad Palette & Stamp Tweaks */}
+      {/* 2. Top Toolbar: Ink Pad Palette, Rotation Controls & Pencil Width */}
       <div className="bg-[#FEF3C7] px-4 sm:px-6 py-2.5 border-b-2 border-amber-300/80 flex flex-wrap items-center justify-between gap-3 text-xs font-mono relative z-20">
         {/* Ink Pad Selection */}
         <div className="flex items-center gap-2">
           <span className="font-pixel text-[8px] text-stone-700 flex items-center gap-1">
             <Palette className="w-3 h-3 text-amber-800" />
-            <span>INK PAD:</span>
+            <span>COLOR:</span>
           </span>
           <div className="flex items-center gap-1.5">
             {INK_PALETTE.map((ink) => {
@@ -543,6 +724,12 @@ export function TravelersSketchbookGame() {
                   onClick={() => {
                     sketchbookAudio.playInkDab();
                     setActiveInk(ink);
+                    // Also update color of selected placed stamp if one is selected
+                    if (selectedPlacedStampId) {
+                      setPlacedStamps(prev =>
+                        prev.map(s => s.id === selectedPlacedStampId ? { ...s, color: ink.hex } : s)
+                      );
+                    }
                   }}
                   className={`w-6 h-6 rounded-full border-2 transition-all cursor-pointer relative flex items-center justify-center ${ink.colorClass} ${
                     isSelected ? 'scale-115 border-[#1E232B] shadow-[1px_2px_0px_#1E232B]' : 'border-stone-400 opacity-85 hover:opacity-100'
@@ -559,69 +746,113 @@ export function TravelersSketchbookGame() {
           </span>
         </div>
 
-        {/* Stamp Size and Angle adjustments */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-[10px] font-bold text-stone-700">
-            <span>SIZE:</span>
-            <button
-              onClick={() => {
-                sketchbookAudio.playInkDab();
-                setStampScale(prev => Math.max(0.7, prev - 0.15));
-              }}
-              className="px-1.5 py-0.5 rounded bg-white border border-[#1E232B] hover:bg-stone-100"
-            >
-              -
-            </button>
-            <span className="w-8 text-center">{Math.round(stampScale * 100)}%</span>
-            <button
-              onClick={() => {
-                sketchbookAudio.playInkDab();
-                setStampScale(prev => Math.min(1.5, prev + 0.15));
-              }}
-              className="px-1.5 py-0.5 rounded bg-white border border-[#1E232B] hover:bg-stone-100"
-            >
-              +
-            </button>
-          </div>
+        {/* Dynamic Controls depending on Tool Mode */}
+        {toolMode === 'stamp' ? (
+          /* Stamp Controls: ROTATION & SIZE */
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* ROTATION / TILT CONTROLS (Full Angle Presets & Nudge) */}
+            <div className="flex items-center gap-1.5 bg-amber-100/90 px-2 py-1 rounded-xl border border-amber-300">
+              <span className="font-pixel text-[8px] text-stone-700">TILT:</span>
+              
+              {/* Angle Presets */}
+              {[0, 45, 90, 180].map((deg) => (
+                <button
+                  key={deg}
+                  onClick={() => handleSetAngle(deg)}
+                  className={`px-1.5 py-0.5 rounded text-[9px] font-pixel transition-all cursor-pointer ${
+                    stampAngle === deg
+                      ? 'bg-[#1E232B] text-white shadow-2xs font-bold'
+                      : 'bg-white hover:bg-amber-200 text-stone-800 border border-stone-300'
+                  }`}
+                >
+                  {deg}°
+                </button>
+              ))}
 
-          <div className="flex items-center gap-1 text-[10px] font-bold text-stone-700">
-            <span>TILT:</span>
-            <button
-              onClick={() => {
-                sketchbookAudio.playInkDab();
-                setStampAngle(prev => (prev - 15) % 360);
-              }}
-              className="px-1.5 py-0.5 rounded bg-white border border-[#1E232B] hover:bg-stone-100"
-              title="Rotate counter-clockwise"
-            >
-              ⟲
-            </button>
-            <span className="w-8 text-center">{stampAngle}°</span>
-            <button
-              onClick={() => {
-                sketchbookAudio.playInkDab();
-                setStampAngle(prev => (prev + 15) % 360);
-              }}
-              className="px-1.5 py-0.5 rounded bg-white border border-[#1E232B] hover:bg-stone-100"
-              title="Rotate clockwise"
-            >
-              ⟳
-            </button>
-          </div>
+              {/* Step Buttons */}
+              <button
+                onClick={() => handleSetAngle(stampAngle - 15)}
+                className="px-1.5 py-0.5 rounded bg-white hover:bg-amber-200 border border-[#1E232B] font-bold text-[10px] cursor-pointer"
+                title="Rotate -15°"
+              >
+                ⟲
+              </button>
+              <button
+                onClick={() => handleSetAngle(stampAngle + 15)}
+                className="px-1.5 py-0.5 rounded bg-white hover:bg-amber-200 border border-[#1E232B] font-bold text-[10px] cursor-pointer"
+                title="Rotate +15° (or press 'R')"
+              >
+                ⟳
+              </button>
 
-          {/* Toggle Washi Tape */}
-          <button
-            onClick={() => {
-              sketchbookAudio.playTapeStick();
-              setHasWashiTape(prev => !prev);
-            }}
-            className={`px-2 py-0.5 rounded border text-[9px] font-pixel transition-all ${
-              hasWashiTape ? 'bg-amber-800 text-white border-amber-950' : 'bg-white text-stone-700 border-stone-300'
-            }`}
-          >
-            TAPE: {hasWashiTape ? 'ON' : 'OFF'}
-          </button>
-        </div>
+              <span className="text-[10px] font-bold text-amber-900 min-w-8 text-center">
+                {stampAngle}°
+              </span>
+            </div>
+
+            {/* Stamp Scale */}
+            <div className="flex items-center gap-1 text-[10px] font-bold text-stone-700">
+              <span>SIZE:</span>
+              <button
+                onClick={() => {
+                  sketchbookAudio.playInkDab();
+                  setStampScale(prev => Math.max(0.7, prev - 0.15));
+                }}
+                className="px-1.5 py-0.5 rounded bg-white border border-[#1E232B] hover:bg-stone-100 cursor-pointer"
+              >
+                -
+              </button>
+              <span className="w-8 text-center">{Math.round(stampScale * 100)}%</span>
+              <button
+                onClick={() => {
+                  sketchbookAudio.playInkDab();
+                  setStampScale(prev => Math.min(1.6, prev + 0.15));
+                }}
+                className="px-1.5 py-0.5 rounded bg-white border border-[#1E232B] hover:bg-stone-100 cursor-pointer"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Pencil Controls: STROKE WIDTH */
+          <div className="flex items-center gap-2 bg-amber-100/90 px-2 py-1 rounded-xl border border-amber-300">
+            <span className="font-pixel text-[8px] text-stone-700">PENCIL WIDTH:</span>
+            {[
+              { label: 'FINE', w: 1.5 },
+              { label: 'MED', w: 3.0 },
+              { label: 'CHISEL', w: 5.5 }
+            ].map((p) => (
+              <button
+                key={p.label}
+                onClick={() => {
+                  sketchbookAudio.playInkDab();
+                  setPencilWidth(p.w);
+                }}
+                className={`px-2 py-0.5 rounded text-[9px] font-pixel transition-all cursor-pointer ${
+                  pencilWidth === p.w
+                    ? 'bg-[#1E232B] text-white shadow-2xs font-bold'
+                    : 'bg-white hover:bg-amber-200 text-stone-800 border border-stone-300'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Toggle Washi Tape */}
+        <button
+          onClick={() => {
+            sketchbookAudio.playTapeStick();
+            setHasWashiTape(prev => !prev);
+          }}
+          className={`px-2 py-0.5 rounded border text-[9px] font-pixel transition-all cursor-pointer ${
+            hasWashiTape ? 'bg-amber-800 text-white border-amber-950' : 'bg-white text-stone-700 border-stone-300'
+          }`}
+        >
+          TAPE: {hasWashiTape ? 'ON' : 'OFF'}
+        </button>
       </div>
 
       {/* 3. Main Studio Workspace: Stamp Drawer + Postcard Canvas */}
@@ -630,82 +861,104 @@ export function TravelersSketchbookGame() {
         <div className="absolute inset-0 bg-[#EFE9DB] pointer-events-none opacity-60" />
         <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-purple-200/20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Left Stamp Drawer */}
-        <div className="relative z-10 w-full lg:w-60 flex flex-col gap-2 order-2 lg:order-1">
-          <div className="bg-white/95 backdrop-blur p-3.5 rounded-2xl border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B]">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-stone-200">
-              <span className="font-pixel text-[9px] text-stone-800 flex items-center gap-1">
-                <span>CARVED STAMPS</span>
-              </span>
-              <span className="text-[10px] font-mono text-purple-700 font-bold">
-                {STAMPS.length} Designs
-              </span>
-            </div>
-
-            {/* Stamp Grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
-              {STAMPS.map((stamp) => {
-                const isSelected = selectedStampId === stamp.id;
-                return (
-                  <button
-                    key={stamp.id}
-                    onClick={() => {
-                      sketchbookAudio.playInkDab();
-                      setSelectedStampId(stamp.id);
-                    }}
-                    className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all cursor-pointer group text-center relative ${
-                      isSelected
-                        ? 'bg-purple-50 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] -translate-y-0.5'
-                        : 'bg-stone-50 hover:bg-stone-100 border-stone-300'
-                    }`}
-                  >
-                    <div className="w-9 h-9 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                      {stamp.renderSvg(isSelected ? activeInk.hex : '#57534E')}
-                    </div>
-                    <span className="font-bold text-[9px] text-stone-700 leading-tight line-clamp-1">
-                      {stamp.name.split(' ')[0]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active Stamp Preview Block */}
-          <div className="bg-[#FFFDF5] p-3 rounded-2xl border-2 border-amber-300 shadow-xs flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 p-1 bg-white rounded-xl border-2 border-[#1E232B] flex items-center justify-center">
-                {activeStamp.renderSvg(activeInk.hex)}
-              </div>
-              <div>
-                <span className="font-bold text-xs text-stone-800 block leading-tight">
-                  {activeStamp.name}
+        {/* Left Stamp Drawer (Shown when in stamp mode) */}
+        {toolMode === 'stamp' ? (
+          <div className="relative z-10 w-full lg:w-60 flex flex-col gap-2 order-2 lg:order-1">
+            <div className="bg-white/95 backdrop-blur p-3.5 rounded-2xl border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B]">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-stone-200">
+                <span className="font-pixel text-[9px] text-stone-800">
+                  CARVED STAMPS
                 </span>
-                <span className="text-[10px] text-stone-500 font-medium">
-                  Click on card to stamp
+                <span className="text-[10px] font-mono text-purple-700 font-bold">
+                  {STAMPS.length} Designs
                 </span>
               </div>
+
+              {/* Stamp Grid */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+                {STAMPS.map((stamp) => {
+                  const isSelected = selectedStampId === stamp.id;
+                  return (
+                    <button
+                      key={stamp.id}
+                      onClick={() => {
+                        sketchbookAudio.playInkDab();
+                        setSelectedStampId(stamp.id);
+                      }}
+                      className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all cursor-pointer group text-center relative ${
+                        isSelected
+                          ? 'bg-purple-50 border-[#1E232B] shadow-[2px_2px_0px_#1E232B] -translate-y-0.5'
+                          : 'bg-stone-50 hover:bg-stone-100 border-stone-300'
+                      }`}
+                    >
+                      <div className="w-9 h-9 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                        {stamp.renderSvg(isSelected ? activeInk.hex : '#57534E')}
+                      </div>
+                      <span className="font-bold text-[9px] text-stone-700 leading-tight line-clamp-1">
+                        {stamp.name.split(' ')[0]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
+
+            {/* Active Stamp Preview Block */}
+            <div className="bg-[#FFFDF5] p-3 rounded-2xl border-2 border-amber-300 shadow-xs flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div 
+                  className="w-10 h-10 p-1 bg-white rounded-xl border-2 border-[#1E232B] flex items-center justify-center transition-transform"
+                  style={{ transform: `rotate(${stampAngle}deg)` }}
+                >
+                  {activeStamp.renderSvg(activeInk.hex)}
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-stone-800 block leading-tight">
+                    {activeStamp.name}
+                  </span>
+                  <span className="text-[10px] text-stone-500 font-medium">
+                    Angle: {stampAngle}° • Press [R]
+                  </span>
+                </div>
+              </div>
+              <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
+            </div>
           </div>
-        </div>
+        ) : (
+          /* Left Pencil Drawing Helper Box */
+          <div className="relative z-10 w-full lg:w-60 flex flex-col gap-2 order-2 lg:order-1">
+            <div className="bg-white/95 backdrop-blur p-4 rounded-2xl border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B]">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-stone-200">
+                <Pencil className="w-4 h-4 text-amber-700" />
+                <span className="font-pixel text-[9px] text-stone-800">FREEHAND PENCIL</span>
+              </div>
+              <p className="text-xs text-stone-600 leading-relaxed mb-3">
+                Click &amp; drag anywhere across the postcard to sketch doodles, notes, or decorative frames.
+              </p>
+              <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-[10px] font-mono text-amber-900 space-y-1">
+                <div>• Active ink color applies</div>
+                <div>• Undo removes strokes</div>
+                <div>• Eraser rubs out lines</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Right Postcard Canvas Area */}
         <div className="relative z-10 flex flex-col items-center w-full max-w-xl order-1 lg:order-2">
           {/* Postcard Container with Deckled Borders and Shadow */}
           <div
             ref={postcardRef}
-            onClick={handlePostcardClick}
-            onMouseMove={(e) => {
-              if (!postcardRef.current) return;
-              const rect = postcardRef.current.getBoundingClientRect();
-              setMousePos({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-              });
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={() => {
+              handlePointerUp();
+              setMousePos(null);
             }}
-            onMouseLeave={() => setMousePos(null)}
-            className={`w-full aspect-[4/2.7] rounded-2xl border-4 border-[#1E232B] shadow-[8px_12px_0px_#1E232B] p-4 sm:p-6 relative cursor-crosshair overflow-hidden transition-colors duration-300 ${paperTheme.bg} ${paperTheme.text}`}
+            className={`w-full aspect-[4/2.7] rounded-2xl border-4 border-[#1E232B] shadow-[8px_12px_0px_#1E232B] p-4 sm:p-6 relative select-none overflow-hidden transition-colors duration-300 ${paperTheme.bg} ${paperTheme.text} ${
+              toolMode === 'pencil' ? 'cursor-crosshair' : toolMode === 'eraser' ? 'cursor-cell' : 'cursor-crosshair'
+            }`}
           >
             {/* Washi Tape Corners */}
             {hasWashiTape && (
@@ -738,7 +991,7 @@ export function TravelersSketchbookGame() {
                 </div>
 
                 <div className="opacity-50 text-[9px] font-mono">
-                  Kerala Hill Station & Backwaters
+                  Kerala Hill Station &amp; Backwaters
                 </div>
               </div>
 
@@ -764,48 +1017,112 @@ export function TravelersSketchbookGame() {
               </div>
             </div>
 
-            {/* Render All Stamped Marks on Canvas */}
-            <div className="absolute inset-0 pointer-events-none">
+            {/* Render Freehand Pencil Drawing Strokes as Smooth SVG Paths */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-15">
+              {strokes.map((stroke) => (
+                <path
+                  key={stroke.id}
+                  d={pointsToSvgPath(stroke.points)}
+                  stroke={stroke.color}
+                  strokeWidth={stroke.width}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  opacity={0.88}
+                />
+              ))}
+              {currentStroke && (
+                <path
+                  d={pointsToSvgPath(currentStroke.points)}
+                  stroke={currentStroke.color}
+                  strokeWidth={currentStroke.width}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  opacity={0.88}
+                />
+              )}
+            </svg>
+
+            {/* Render All Stamped Marks on Canvas with PROPER Framer Motion Rotation */}
+            <div className="absolute inset-0 pointer-events-none z-10">
               {placedStamps.map((stamp) => {
                 const def = STAMPS.find(s => s.id === stamp.stampId);
                 if (!def) return null;
+                const isSelected = selectedPlacedStampId === stamp.id;
 
                 return (
                   <motion.div
                     key={stamp.id}
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: stamp.scale, opacity: 0.95 }}
+                    initial={{ scale: 0.5, rotate: stamp.rotation, opacity: 0 }}
+                    animate={{ scale: stamp.scale, rotate: stamp.rotation, opacity: 0.95 }}
                     transition={{ type: "spring", stiffness: 500, damping: 25 }}
                     style={{
                       left: `${stamp.x}%`,
                       top: `${stamp.y}%`,
-                      transform: `translate(-50%, -50%) rotate(${stamp.rotation}deg)`
                     }}
-                    className="absolute w-14 h-14 sm:w-16 sm:h-16 pointer-events-auto cursor-pointer group"
-                    title="Click to peel off / remove"
-                    onClick={(e) => handleRemoveStamp(stamp.id, e)}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 pointer-events-auto cursor-pointer group ${
+                      isSelected ? 'ring-2 ring-purple-600 ring-offset-2 rounded-2xl' : ''
+                    }`}
+                    title="Click to select &amp; rotate"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPlacedStampId(stamp.id);
+                      setStampAngle(stamp.rotation);
+                    }}
                   >
                     <div className="w-full h-full relative group-hover:scale-105 transition-transform">
                       {def.renderSvg(stamp.color)}
-                      {/* Peel/Delete Hover Hint */}
-                      <span className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 font-pixel text-[7px] bg-[#1E232B] text-white px-1 rounded transition-opacity">
-                        ✕
-                      </span>
+
+                      {/* Selected Stamp Floating Action Controls */}
+                      {isSelected && (
+                        <div 
+                          className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-[#1E232B] px-1.5 py-0.5 rounded-full shadow-lg z-30 pointer-events-auto"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={(e) => handleRotatePlacedStamp(stamp.id, 45, e)}
+                            className="text-white hover:text-amber-300 font-pixel text-[8px] px-1 flex items-center gap-0.5 cursor-pointer"
+                            title="Rotate +45°"
+                          >
+                            <RotateCw className="w-2.5 h-2.5" />
+                            <span>+45°</span>
+                          </button>
+                          <span className="text-stone-500">•</span>
+                          <button
+                            onClick={(e) => handleRemoveStamp(stamp.id, e)}
+                            className="text-red-400 hover:text-red-300 font-pixel text-[8px] px-1 cursor-pointer"
+                            title="Delete Stamp"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Peel/Delete Hover Hint when not selected */}
+                      {!isSelected && (
+                        <span 
+                          onClick={(e) => handleRemoveStamp(stamp.id, e)}
+                          className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 font-pixel text-[7px] bg-[#1E232B] text-white px-1 rounded transition-opacity cursor-pointer"
+                        >
+                          ✕
+                        </span>
+                      )}
                     </div>
                   </motion.div>
                 );
               })}
             </div>
 
-            {/* Ghost Cursor Stamp Following Mouse */}
-            {mousePos && (
+            {/* Ghost Cursor Stamp Following Mouse (Only in stamp mode) */}
+            {toolMode === 'stamp' && mousePos && (
               <div
                 style={{
                   left: mousePos.x,
                   top: mousePos.y,
                   transform: `translate(-50%, -50%) rotate(${stampAngle}deg) scale(${stampScale})`
                 }}
-                className="absolute w-14 h-14 sm:w-16 sm:h-16 pointer-events-none opacity-45 filter drop-shadow"
+                className="absolute w-14 h-14 sm:w-16 sm:h-16 pointer-events-none opacity-45 filter drop-shadow z-20"
               >
                 {activeStamp.renderSvg(activeInk.hex)}
               </div>
@@ -815,7 +1132,9 @@ export function TravelersSketchbookGame() {
           {/* Under-canvas instructions & Note Editor */}
           <div className="w-full mt-3 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-stone-600">
             <span className="font-pixel text-[8px] text-stone-500">
-              CLICK ANYWHERE ON CARD TO STAMP • CLICK STAMP TO PEEL
+              {toolMode === 'stamp' 
+                ? 'CLICK TO STAMP • PRESS [R] TO ROTATE • CLICK STAMP TO SELECT'
+                : 'DRAG TO DRAW PENCIL STROKES • USE UNDO TO REVERT'}
             </span>
 
             {/* Preset Quote Switcher Button */}
@@ -911,7 +1230,7 @@ export function TravelersSketchbookGame() {
       {/* 4. Footer */}
       <div className="bg-[#1C1917] px-4 py-2.5 text-center border-t-2 border-[#1E232B] relative z-20">
         <p className="font-mono text-[11px] text-purple-200/90 font-bold">
-          "Every stamp marks a memory; every postcard carries a quiet piece of your journey." 📮
+          "Every stamp marks a memory; every sketch carries a quiet piece of your journey." 📮
         </p>
       </div>
     </div>

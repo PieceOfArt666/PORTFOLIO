@@ -4,6 +4,7 @@ import { Hero } from './components/ui/Hero';
 import { AboutMe } from './components/ui/AboutMe';
 import { AboutPhilosophy } from './components/ui/AboutPhilosophy';
 import { Projects } from './components/ui/Projects';
+import { CozyArcadeHub } from './components/cozy-games/CozyArcadeHub';
 import { Skills } from './components/ui/Skills';
 import { Contact } from './components/ui/Contact';
 import { StudioAtmosphere } from './components/ui/StudioAtmosphere';
@@ -124,10 +125,23 @@ export function App() {
 
         <Projects />
 
-        {/* Level Transition 4: 1-4 GAMES ➜ 1-5 SKILLS */}
+        {/* Level Transition 4: 1-4 GAMES ➜ 1-4.5 COZY ARCADE */}
         <GameSectionDivider
           stageFrom="WORLD 1-4"
-          stageFromName="GAMES SHOWCASE"
+          stageFromName="SHIPPED TITLES"
+          stageTo="WORLD 1-4.5"
+          stageToName="COZY BROWSER LAB"
+          toSectionId="cozy-arcade"
+          flavor="mario"
+          onCoinCollect={handleCollectCoin}
+        />
+
+        <CozyArcadeHub />
+
+        {/* Level Transition 5: 1-4.5 COZY ARCADE ➜ 1-5 SKILLS */}
+        <GameSectionDivider
+          stageFrom="WORLD 1-4.5"
+          stageFromName="COZY ARCADE"
           stageTo="WORLD 1-5"
           stageToName="CORE SKILLS & TECH"
           toSectionId="skills"

@@ -60,7 +60,7 @@ export function Navbar({
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'about', 'services', 'projects', 'skills', 'contact'];
+      const sections = ['hero', 'about', 'services', 'projects', 'cozy-arcade', 'skills', 'contact'];
       const scrollY = window.scrollY;
 
       // If near bottom of page, highlight contact
@@ -111,6 +111,7 @@ export function Navbar({
       case 'about': return 'WORLD 1-2';
       case 'services': return 'WORLD 1-3';
       case 'projects': return 'WORLD 1-4';
+      case 'cozy-arcade': return 'WORLD 1-4.5';
       case 'skills': return 'WORLD 1-5';
       case 'contact': return 'CASTLE 1-6';
       default: return 'WORLD 1-1';

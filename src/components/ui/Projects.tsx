@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ExternalLink, Gamepad2, Play, Sparkles, Download, Film, Image as ImageIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, Gamepad2, Play, Sparkles, Download, Film, Image as ImageIcon, X } from 'lucide-react';
 import { PROJECTS, PERSONAL_INFO } from '../../data/portfolioData';
 import { soundEffects } from '../../utils/soundEffects';
 import { InteractiveOverworldMap } from './InteractiveOverworldMap';
@@ -135,6 +135,31 @@ export function Projects() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('echobound');
   const [activeMediaTab, setActiveMediaTab] = useState<'trailer' | 'screenshots'>('trailer');
   const [activeScreenshotIdx, setActiveScreenshotIdx] = useState<number>(0);
+  const [isCinemaOpen, setIsCinemaOpen] = useState(false);
+  const [cinemaClip, setCinemaClip] = useState<'main' | 'blink' | 'salon'>('main');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsCinemaOpen(false);
+    };
+    if (isCinemaOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isCinemaOpen]);
+
+  const handleOpenCinema = () => {
+    soundEffects.playSelect();
+    setCinemaClip('main');
+    setIsCinemaOpen(true);
+    setActiveMediaTab('trailer');
+  };
 
   const handleStageSelect = (projectId: string) => {
     soundEffects.playSelect();
@@ -514,12 +539,9 @@ export function Projects() {
 
                         {activeProject.youtubeId && (
                           <button
-                            onClick={() => {
-                              soundEffects.playSelect();
-                              setActiveMediaTab('trailer');
-                            }}
-                            className="btn-2d-white text-xs py-1.5 px-3 rounded-full group/tr inline-flex items-center gap-1"
-                            title="Watch Trailer on Screen"
+                            onClick={handleOpenCinema}
+                            className="btn-2d-white text-xs py-1.5 px-3 rounded-full group/tr inline-flex items-center gap-1 cursor-pointer"
+                            title="Watch Trailer in Full Cinema"
                           >
                             <Film className="w-3 h-3 text-[#E60012] group-hover/tr:scale-115 transition-transform" />
                             <span className="font-pixel text-[8px]">TRAILER</span>
@@ -579,12 +601,9 @@ export function Projects() {
                         </span>
                         {activeProject.videoUrl && (
                           <button
-                            onClick={() => {
-                              soundEffects.playSelect();
-                              setActiveMediaTab('trailer');
-                            }}
-                            className="btn-2d-red text-xs py-1.5 px-3.5 rounded-full group/teaser inline-flex items-center gap-1.5"
-                            title="Watch In-Engine Teaser Clip"
+                            onClick={handleOpenCinema}
+                            className="btn-2d-red text-xs py-1.5 px-3.5 rounded-full group/teaser inline-flex items-center gap-1.5 cursor-pointer shadow-sm active:translate-y-0.5"
+                            title="Watch In-Engine Teaser Clip in Full Screen Cinema"
                           >
                             <Film className="w-3.5 h-3.5 text-white group-hover/teaser:scale-125 transition-transform" />
                             <span className="font-pixel text-[8px]">
@@ -603,6 +622,164 @@ export function Projects() {
           {/* Earthen Cliff Platform Base Bottom Strip */}
           <div className="pixel-earth-footer w-full h-6 rounded-b-[24px] border-x-4 border-b-4 border-[#1E232B]" />
         </motion.div>
+
+        {/* Retro Cinema Video Lightbox Modal */}
+        <AnimatePresence>
+          {isCinemaOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+              onClick={() => setIsCinemaOpen(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                className="relative max-w-4xl w-full bg-[#12161E] rounded-3xl border-4 border-[#1E232B] shadow-[8px_16px_0px_#000] overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Cinema Header */}
+                <div className="bg-[#1C212B] px-4 sm:px-6 py-3 flex items-center justify-between border-b-2 border-white/10 text-white">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#E60012] animate-ping" />
+                    <div>
+                      <span className="font-pixel text-[8px] text-[#FBBF24] block">
+                        {activeProject.id === 'haunted-house' ? 'UNITY 6 URP • IN-ENGINE PROTOTYPE' : 'PROJECT SHOWCASE CINEMA'}
+                      </span>
+                      <h4 className="font-bold text-sm text-white line-clamp-1">
+                        {activeProject.title}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      soundEffects.playSelect();
+                      setIsCinemaOpen(false);
+                    }}
+                    className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 font-pixel text-[9px] flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>CLOSE</span>
+                  </button>
+                </div>
+
+                {/* Video / Media Display Area */}
+                <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+                  {activeProject.youtubeId ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${activeProject.youtubeId}?autoplay=1&rel=0`}
+                      title={activeProject.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : activeProject.id === 'haunted-house' ? (
+                    cinemaClip === 'main' ? (
+                      <video
+                        src="/videos/haunted-house.mp4"
+                        title="The Haunted House In-Engine Recording"
+                        autoPlay
+                        playsInline
+                        controls
+                        loop
+                        className="w-full h-full object-contain"
+                      />
+                    ) : cinemaClip === 'blink' ? (
+                      <img
+                        src="/images/haunted-house/blink-woman.gif"
+                        alt="The Blink Woman Entity"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <img
+                        src="/images/haunted-house/vanity-salon.gif"
+                        alt="The Vanity Salon"
+                        className="w-full h-full object-contain"
+                      />
+                    )
+                  ) : activeProject.videoUrl ? (
+                    <video
+                      src={activeProject.videoUrl}
+                      title={activeProject.title}
+                      autoPlay
+                      playsInline
+                      controls
+                      loop
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <img
+                      src={currentImage}
+                      alt={activeProject.title}
+                      className="w-full h-full object-contain"
+                    />
+                  )}
+                </div>
+
+                {/* Cinema Footer Bar */}
+                <div className="bg-[#1C212B] px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-300 border-t-2 border-white/10">
+                  {activeProject.id === 'haunted-house' ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-pixel text-[8px] text-slate-400">SELECT FOOTAGE:</span>
+                      <button
+                        onClick={() => {
+                          soundEffects.playSelect();
+                          setCinemaClip('main');
+                        }}
+                        className={`px-2.5 py-1 rounded-full font-pixel text-[8px] border transition-all cursor-pointer ${
+                          cinemaClip === 'main'
+                            ? 'bg-[#E60012] text-white border-red-500 font-bold'
+                            : 'bg-stone-800 text-stone-300 border-stone-700 hover:text-white'
+                        }`}
+                      >
+                        ● IN-ENGINE WALKTHROUGH
+                      </button>
+                      <button
+                        onClick={() => {
+                          soundEffects.playSelect();
+                          setCinemaClip('blink');
+                        }}
+                        className={`px-2.5 py-1 rounded-full font-pixel text-[8px] border transition-all cursor-pointer ${
+                          cinemaClip === 'blink'
+                            ? 'bg-purple-600 text-white border-purple-400 font-bold'
+                            : 'bg-stone-800 text-stone-300 border-stone-700 hover:text-white'
+                        }`}
+                      >
+                        👁️ THE BLINK WOMAN
+                      </button>
+                      <button
+                        onClick={() => {
+                          soundEffects.playSelect();
+                          setCinemaClip('salon');
+                        }}
+                        className={`px-2.5 py-1 rounded-full font-pixel text-[8px] border transition-all cursor-pointer ${
+                          cinemaClip === 'salon'
+                            ? 'bg-amber-600 text-white border-amber-400 font-bold'
+                            : 'bg-stone-800 text-stone-300 border-stone-700 hover:text-white'
+                        }`}
+                      >
+                        🕯️ VANITY SALON
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="font-pixel text-[8px] text-slate-400">
+                      {activeProject.tagline}
+                    </span>
+                  )}
+
+                  <div className="flex items-center gap-2 font-pixel text-[8px] text-slate-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>PRESS [ESC] TO CLOSE</span>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

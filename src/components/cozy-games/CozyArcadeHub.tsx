@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Clock, Play } from 'lucide-react';
 import { MonsoonChaiGame } from './MonsoonChaiGame';
+import { DeskTerrariumGame } from './DeskTerrariumGame';
 
 export type CozyGameId = 'monsoon-chai' | 'desk-terrarium' | 'bento-keepsakes' | 'travelers-sketchbook';
 
@@ -30,7 +31,7 @@ const COZY_GAMES: CozyGameDef[] = [
     title: 'Desk Terrarium & Bonsai',
     subtitle: 'Zen Garden Pruning • Lo-Fi Radio',
     icon: '🪴',
-    status: 'UP NEXT',
+    status: 'PLAYABLE',
     themeColor: '#059669',
     description: 'Shape and water a miniature desktop bonsai, prune budding leaves with snips, and listen to cozy ambient rain & lullabies.'
   },
@@ -39,7 +40,7 @@ const COZY_GAMES: CozyGameDef[] = [
     title: 'Bento & Keepsakes',
     subtitle: 'Satisfying Packing • Geometric Fits',
     icon: '🍱',
-    status: 'COMING SOON',
+    status: 'UP NEXT',
     themeColor: '#EA580C',
     description: 'Fit rounded onigiri, brass keys, and retro Game Boy cartridges snugly into wooden compartments with weighted click physics.'
   },
@@ -55,7 +56,7 @@ const COZY_GAMES: CozyGameDef[] = [
 ];
 
 export function CozyArcadeHub() {
-  const [selectedGameId, setSelectedGameId] = useState<CozyGameId>('monsoon-chai');
+  const [selectedGameId, setSelectedGameId] = useState<CozyGameId>('desk-terrarium');
 
   const activeGame = COZY_GAMES.find(g => g.id === selectedGameId) || COZY_GAMES[0];
 
@@ -72,14 +73,14 @@ export function CozyArcadeHub() {
         >
           <div>
             <div className="inline-flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full bg-white border-3 border-[#1E232B] shadow-[3px_3px_0px_#1E232B] text-xs font-mono font-bold text-[#1E232B]">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#D97706] animate-ping" />
-              <span className="font-pixel text-[9px] text-[#D97706]">WORLD 1-4.5</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#059669] animate-ping" />
+              <span className="font-pixel text-[9px] text-[#059669]">WORLD 1-4.5</span>
               <span className="text-slate-300">•</span>
               <span className="font-pixel text-[9px] text-[#1E232B]">COZY BROWSER GAMES LAB</span>
             </div>
 
             <h2 className="font-display font-black text-4xl sm:text-5xl text-[#1E232B] tracking-tight mb-2">
-              Playable <span className="text-[#D97706]">Cozy Micro-Games</span>
+              Playable <span className="text-[#059669]">Cozy Micro-Games</span>
             </h2>
 
             <p className="text-base text-slate-600 max-w-xl font-medium">
@@ -87,9 +88,9 @@ export function CozyArcadeHub() {
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border-2 border-amber-300 text-amber-900 text-xs font-mono font-bold self-start sm:self-auto shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-            <span>4 COZY EXPERIENCES PLANNED</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-xs font-mono font-bold self-start sm:self-auto shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+            <span>2 OF 4 GAMES PLAYABLE NOW</span>
           </div>
         </motion.div>
 
@@ -143,8 +144,10 @@ export function CozyArcadeHub() {
         <div className="w-full">
           {selectedGameId === 'monsoon-chai' ? (
             <MonsoonChaiGame />
+          ) : selectedGameId === 'desk-terrarium' ? (
+            <DeskTerrariumGame />
           ) : (
-            /* Preview / Queued Card for Games 2, 3, and 6 */
+            /* Preview / Queued Card for Games 3 and 6 */
             <div className="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#1E232B] shadow-[8px_10px_0px_#1E232B] bg-white p-8 sm:p-12 text-center">
               <div className="w-20 h-20 rounded-3xl bg-amber-50 border-3 border-[#1E232B] shadow-[4px_4px_0px_#1E232B] flex items-center justify-center text-4xl mx-auto mb-4">
                 {activeGame.icon}
@@ -164,17 +167,17 @@ export function CozyArcadeHub() {
               <div className="inline-flex items-center gap-2 p-3 rounded-2xl bg-amber-50 border-2 border-amber-200 text-xs font-mono font-bold text-amber-900 max-w-md text-left">
                 <Clock className="w-4 h-4 flex-shrink-0 text-amber-700" />
                 <span>
-                  Game 1 (Monsoon Chai) is ready to play! Once approved, this game will be built next.
+                  Games 1 & 2 are ready to play! Once approved, Bento & Keepsakes will be built next.
                 </span>
               </div>
 
               <div className="mt-6">
                 <button
-                  onClick={() => setSelectedGameId('monsoon-chai')}
-                  className="py-2.5 px-5 rounded-xl bg-[#D97706] hover:bg-[#B45309] text-white font-pixel text-xs border-2 border-[#1E232B] shadow-[3px_3px_0px_#1E232B] cursor-pointer inline-flex items-center gap-2"
+                  onClick={() => setSelectedGameId('desk-terrarium')}
+                  className="py-2.5 px-5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-pixel text-xs border-2 border-[#1E232B] shadow-[3px_3px_0px_#1E232B] cursor-pointer inline-flex items-center gap-2"
                 >
                   <Play className="w-3.5 h-3.5" />
-                  <span>PLAY MONSOON CHAI NOW</span>
+                  <span>PLAY DESK TERRARIUM NOW</span>
                 </button>
               </div>
             </div>
